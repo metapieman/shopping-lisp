@@ -1,0 +1,8 @@
+- Instead of printing multiple list, should print a list of common
+  ingredients and then multiple alternative smaller lists which differ.
+
+- Nicer support for teaspoons, tablespoons (US and UK).
+
+- Should be able to substitute a list of ingredients for another list,
+  e.g., instead of 'Curry paste', could have a list of all the
+  ingredients required to make curry paste.
