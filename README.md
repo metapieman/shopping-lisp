@@ -7,4 +7,4 @@ This aim of this package is to make grocery shopping easy. The user selects whic
 
 Recipes are quite flexible: ingredients can be input with a quantity (e.g., 100 ml of olive oil), a count (e.g., 10 bay leaves), or neither (e.g., flour). It is also possible to specify ingredient alternatives (e.g., green cabbage or kale). Many different units are supported, thanks to the calc package which is used under the hood.
 
-For installation and usage instructions, see the commentary in shopping-list.el.
+For installation and usage instructions, see the commentary in shopping-lisp.el.
