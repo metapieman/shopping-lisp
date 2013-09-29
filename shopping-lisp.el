@@ -45,7 +45,7 @@
 ;;
 ;; Once installed, prepare your shopping list by doing:
 ;;
-;; M-x prepare-shopping-list
+;; M-x shopping-prepare-list
 
 (require 'calc-ext)
 
