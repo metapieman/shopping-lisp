@@ -229,6 +229,32 @@
           (setq digits (append digits (list (string-to-number new-digit)))))))
     digits))
 
+(defun shopping-sort-shopping-list (shopping-list)
+  "Destructively sort a shopping list by ingredient name."
+  (sort shopping-list
+        (lambda (ing1 ing2)
+          (string< (first ing1) (first ing2)))))
+
+(defun shopping-set-intersection (list-of-sets)
+  "Return a new list with the intersection of the given sets (just lists)."
+  (if (= (length list-of-sets) 1)
+      (copy-tree (first list-of-sets))
+    (if (> (length list-of-sets) 2)
+        (shopping-set-intersection
+         (append `((,first list-of-sets))
+                 (shopping-set-intersection (cdr list-of-sets))))
+      (let ((intersection '()))
+        (dolist element (first list-of-sets)
+                (if (memq element (second list-of-lists))
+                    ))))))  ;; up to here
+
+;; Will use this to pull out the common ingredients from a set of
+;; shopping lists, and then go through each list removing the common
+;; ingredients to get the difference lists.
+
+;; (defun shopping-get-common-ingredients (shopping-lists)
+;;   )
+
 (defun shopping-prepare-list ()
   (interactive)
   (shopping-reload-data)
