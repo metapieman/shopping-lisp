@@ -103,10 +103,10 @@ g)."
 or (name quantity), or (name), shopping list is a symbol which
 points to an alist from ingredient name to quantity information"
   (let* ((sl-quantity
-         (shopping-quantity-to-composite
-          (shopping-get-quantity-from-ingredient-expr ingredient-info)))
-        (ingredient (first ingredient-info))
-        (item (assoc ingredient (eval shopping-list))))
+          (shopping-quantity-to-composite
+           (shopping-get-quantity-from-ingredient-expr ingredient-info)))
+         (ingredient (first ingredient-info))
+         (item (assoc ingredient (eval shopping-list))))
     (if (eq item nil)
         (add-to-list shopping-list `(,ingredient . ,sl-quantity))
       (progn
