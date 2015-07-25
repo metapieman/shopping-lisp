@@ -82,7 +82,12 @@
   (eq nil quantity))
 
 (defun shopping-add-composite-quantities (quantity1 quantity2)
-  "Composite quantities are lists of length three. The first element is nil or t and indicates that an unspecified amount was required in some recipe. The second element is a number representing a unitless quantity, and the third is an even-length list of pairs representing unitful quantities, e.g., (2.0 kg 3 g)."
+  "Composite quantities are lists of length three. The first
+element is nil or t and indicates that an unspecified amount was
+required in some recipe. The second element is a number
+representing a unitless quantity, and the third is an even-length
+list of pairs representing unitful quantities, e.g., (2.0 kg 3
+g)."
   (list (or (first quantity1) (first quantity2))
         (+ (second quantity1) (second quantity2))
         (append (third quantity1) (third quantity2)))
@@ -94,7 +99,9 @@
         ((shopping-is-unitful-quantity quantity) `(nil 0 ,quantity))))
 
 (defun shopping-add-ingredient-to-shopping-list (shopping-list ingredient-info)
-  "ingredient is a list of the form (name quantity unit), or (name quantity), or (name), shopping list is a symbol which points to an alist from ingredient name to quantity information"
+  "ingredient is a list of the form (name quantity unit),
+or (name quantity), or (name), shopping list is a symbol which
+points to an alist from ingredient name to quantity information"
   (let* ((sl-quantity
          (shopping-quantity-to-composite
           (shopping-get-quantity-from-ingredient-expr ingredient-info)))
@@ -117,7 +124,9 @@
 
 (defun shopping-add-substitutable-ingredients-to-shopping-list
   (shopping-list substitutable-ingredient-list)
-  "Given a shopping list and a list of n substitutable ingredients, returns n new shopping lists, one for each variation. Does not modify input lists."
+  "Given a shopping list and a list of n substitutable
+ingredients, returns n new shopping lists, one for each
+variation. Does not modify input lists."
   (loop with result = '()
         for i from 0
         while (< i (length substitutable-ingredient-list))
@@ -131,7 +140,11 @@
         return result))
 
 (defun shopping-add-recipe-to-shopping-lists (shopping-lists recipe)
-  "shopping-lists is a list of shopping lists. We need this because whenever there's an 'or' ingredient, a shopping list branches into two or more lists. This function does not modify the input lists, it creates deep copies and returns those instead."
+  "shopping-lists is a list of shopping lists. We need this
+because whenever there's an 'or' ingredient, a shopping list
+branches into two or more lists. This function does not modify
+the input lists, it creates deep copies and returns those
+instead."
   (let ((ingredients (getf recipe ':ingredients)))
     (loop with results = (copy-tree shopping-lists)
           for i from 0
