@@ -50,6 +50,7 @@
 (require 'calc-ext)
 
 (defun shopping-reload-data ()
+  "Reload the recipe and ingredient files."
   (if (eq nil (boundp 'shopping-recipe-file))
       (error "Error: shopping-recipe-file is not defined"))
   (if (eq nil (boundp 'shopping-ingredient-file))
@@ -58,27 +59,41 @@
   (load shopping-ingredient-file))
 
 (defun shopping-to-calc (shopping-sexp)
-  "Convert a shopping-lisp format quantity, e.g., (1.0 kg), to a calc expression."
-  (math-read-expr
-   (format "%f %s" (float (first shopping-sexp))
-                   (symbol-name (second shopping-sexp)))))
+  "Convert a shopping-lisp format quantity, e.g., (1.0 kg), to a
+calc expression."
+  (math-read-expr (format "%f %s" (float (first shopping-sexp))
+                          (symbol-name (second shopping-sexp)))))
 
 (defun shopping-get-quantity-from-ingredient-expr (ingredient-expr)
-  "ingredient-expr is a list appearing in the :ingredients list for a recipe"
-  (if (= 1 (length ingredient-expr))
-      nil
-    (cdr ingredient-expr)))
+  "Get the quantity for an ingredient appearing in
+the :ingredients list in a recipe. If no quantity is specified
+for the ingredient then nil is returned. E.g., for (\"Salt\"),
+nil will be returned, but for (\"Squash\" 750 g), the return
+value will be (750 g). Note that this will be the cdr of the
+input, not a freshly-created list."
+  (if (= 1 (length ingredient-expr)) nil (cdr ingredient-expr)))
 
 (defun shopping-is-unitful-quantity (quantity)
+  "Test whether a quantity appearing in the :ingredients list in
+a recipe has units, where the quantity is something that would be
+returned from shopping-get-quantity-from-ingredient-expr.
+E.g., (750 g) would return true, but (3) would return nil, and
+nil would return nil (recall that nil is a valid quantity -- it
+indicates that no quantity was specified)."
   (and (= 2 (length quantity))
        (numberp (first quantity))
        (symbolp (second quantity))))
 
 (defun shopping-is-unitless-quantity (quantity)
+  "Test whether a quantity appearing in the :ingredients list in
+a recipe is unitless but not nil. E.g., (750 g) would return
+false, (3) would return true, nil would return false."
   (and (= 1 (length quantity))
        (numberp (first quantity))))
 
 (defun shopping-is-unspecified-quantity (quantity)
+  "Test whether a quantity appearing in the :ingredients list in
+a recipe is nil, i.e., unspecified."
   (eq nil quantity))
 
 (defun shopping-add-composite-quantities (quantity1 quantity2)
@@ -90,10 +105,11 @@ list of pairs representing unitful quantities, e.g., (2.0 kg 3
 g)."
   (list (or (first quantity1) (first quantity2))
         (+ (second quantity1) (second quantity2))
-        (append (third quantity1) (third quantity2)))
-  )
+        (append (third quantity1) (third quantity2))))
 
 (defun shopping-quantity-to-composite (quantity)
+  "See doc for shopping-add-composite-quantities for the meaning
+of a 'composite' quantity."
   (cond ((shopping-is-unspecified-quantity quantity) '(t 0 ()))
         ((shopping-is-unitless-quantity quantity) `(nil ,(first quantity) ()))
         ((shopping-is-unitful-quantity quantity) `(nil 0 ,quantity))))
@@ -249,7 +265,8 @@ instead."
           (string< (first ing1) (first ing2)))))
 
 (defun shopping-set-intersection (list-of-sets)
-  "Return a new list with the intersection of the given sets (just lists)."
+  "Return a new list with the intersection of the given
+sets (just lists)."
   (if (= (length list-of-sets) 1)
       (copy-tree (first list-of-sets))
     (if (> (length list-of-sets) 2)
