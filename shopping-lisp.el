@@ -272,6 +272,59 @@ Example:
        (shopping-to-calc (list (first quantity-list) (second quantity-list)))
        (shopping-sum-quantities (cdr (cdr quantity-list)))))))
 
+(defun try-sum-unitful (q1 q2)
+"Use math-simplify-units to try and sum two unitful quantities. If
+  their dimensions are different, return nil.
+
+Example:
+  (try-sum-unitful (shopping-to-calc '(10 kg)) (shopping-to-calc '(500 g)))
+    --> (* (float 105 -1) (var kg var-kg))
+
+  (try-sum-unitful (shopping-to-calc '(10 kg)) (shopping-to-calc '(5 l)))
+    --> nil
+"
+(let ((sum-of-quantities (math-simplify-units (list '+ q1 q2))))
+  (if (eq (car sum-of-quantities) '+) nil
+    sum-of-quantities)))
+
+(defun shopping-sum-quantities-2 (quantity-list)
+  "Sums up a list of unitful quantities, allowing for different
+  dimensions. Quantities with different dimensions of course get
+  summed separately.
+
+  Returns a list of calc-type unitful quantities, each having a
+  unique dimension.
+
+Example:
+
+ (shopping-sum-quantities-2 '(5 kg 1 l 100 lb 2 ml))
+  --> ((* (float 50359237 -6) (var kg var-kg)) (* (float 1002 -3) (var l var-l)))
+"
+  (if (= 2 (length quantity-list))
+      (list (shopping-to-calc quantity-list))
+    (let* ((first-qty (shopping-to-calc
+                       (list (car quantity-list) (cadr quantity-list))))
+           (sum-of-remainder (shopping-sum-quantities-2 (cddr quantity-list)))
+           (all-sums (mapcar (lambda (qty) (try-sum-unitful first-qty qty))
+                             sum-of-remainder))
+           (all-sums-dedup (delete nil (delete-dups all-sums))))
+      (if (> (length all-sums-dedup) 1)
+          (error "all-sums-dedup should be either () or ([SUM QTY])")
+        (if (equal all-sums-dedup '()) ; all sums were nil,
+                                        ; so first-qty has a
+                                        ; different dimension
+                                        ; to all other
+                                        ; quantities
+            (list first-qty sum-of-remainder)
+                                        ; TODO: modify
+                                        ; sum-of-remainder so it
+                                        ; includes the summed quantity
+                                        ; and return it
+          (progn
+            (setf (nth (position-if (lambda (x) (not (equal x nil))) all-sums) sum-of-remainder)
+                  (car all-sums-dedup))
+            sum-of-remainder))))))
+
 (defun shopping-shopping-list-entry-to-string (entry)
   (let* ((ingredient (first entry))
          (output-strings '()))
