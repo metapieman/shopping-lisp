@@ -102,22 +102,80 @@ element is nil or t and indicates that an unspecified amount was
 required in some recipe. The second element is a number
 representing a unitless quantity, and the third is an even-length
 list of pairs representing unitful quantities, e.g., (2.0 kg 3
-g)."
+g).
+
+Example:
+ (setq q1 '(nil 0 (2.0 kg 3.0 g)))
+ (setq q2 '(nil 1 (3.0 kg)))
+ (shopping-add-composite-quantities q1 q2)
+
+ ->  (nil 1 (2.0 kg 3.0 g 3.0 kg))
+
+Note: the append function is used to concatenate the unitful
+quantities. From the Emacs lisp manual: 'All arguments except the
+last one are copied, so none of the arguments is altered.' So in
+the above example, q1 and q2 are not altered.
+"
   (list (or (first quantity1) (first quantity2))
-        (+ (second quantity1) (second quantity2))
+         (+ (second quantity1) (second quantity2))
         (append (third quantity1) (third quantity2))))
 
 (defun shopping-quantity-to-composite (quantity)
-  "See doc for shopping-add-composite-quantities for the meaning
-of a 'composite' quantity."
+  "Convert a quantity appearing in a shopping list to a 'composite quantity'.
+
+See doc for shopping-add-composite-quantities for the meaning of
+a 'composite' quantity.
+
+Example:
+
+  (shopping-quantity-to-composite '())
+    --> (t 0 nil)
+
+  (shopping-quantity-to-composite '(50))
+    --> (nil 50 nil)
+
+  (shopping-quantity-to-composite '(10 g))
+   --> (nil 0 (10 g))
+
+This function will not affect the input list, but note that for
+unitful quantities (third example above), the input list will
+become part of the output list (i.e., the input list is not
+copied).
+"
   (cond ((shopping-is-unspecified-quantity quantity) '(t 0 ()))
         ((shopping-is-unitless-quantity quantity) `(nil ,(first quantity) ()))
         ((shopping-is-unitful-quantity quantity) `(nil 0 ,quantity))))
 
 (defun shopping-add-ingredient-to-shopping-list (shopping-list ingredient-info)
-  "ingredient is a list of the form (name quantity unit),
-or (name quantity), or (name), shopping list is a symbol which
-points to an alist from ingredient name to quantity information"
+  "Add an ingredient to the given shopping list. Note that
+shopping-list is altered by this function.
+
+shopping list is a symbol pointing to an alist from ingredient
+name to quantity information. Note: the symbol must be
+quoted (see example below). This should probably be changed, it
+doesn't feel right.
+
+ingredient-info is a list of the form (name quantity unit),
+or (name quantity), or (name), i.e., an element from
+the :ingredients list in a recipe,
+
+Note that it doesn't actually sum up the unitful
+quantities. Rather, they're just collected into a list. The
+summing up comes on string conversion (perhaps this should be
+changed?).
+
+Example:
+  (setq my-shopping '())
+  (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Unsalted butter\" 50 g))
+  (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Unsalted butter\" 100 g))
+  (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Cashew nuts\"))
+    --> ((\"Cashew nuts\" t 0 nil) (\"Unsalted butter\" nil 0 (50 g 100 g)))
+
+Note: there are no '.' symbols in the elements of the resulting
+alist. That's because the second value in each element is a
+list. E.g., (1 2 3 4) is just another way of writing (1 . (2 3 4)),
+which can be verified by evaluating '(1 . (2 3 4))
+"
   (let* ((sl-quantity
           (shopping-quantity-to-composite
            (shopping-get-quantity-from-ingredient-expr ingredient-info)))
@@ -129,20 +187,27 @@ points to an alist from ingredient name to quantity information"
         (setf (cdr item) (shopping-add-composite-quantities (cdr item) sl-quantity))
         (eval shopping-list)))))
 
-(defun shopping-sum-quantities (quantity-list)
-  "Sum up quantities in an even-length list, e.g., (500 g 1 kg)"
-  (if (= 2 (length quantity-list))
-      (shopping-to-calc quantity-list)
-    (math-simplify-units
-     (list '+
-       (shopping-to-calc (list (first quantity-list) (second quantity-list)))
-       (shopping-sum-quantities (cdr (cdr quantity-list)))))))
-
 (defun shopping-add-substitutable-ingredients-to-shopping-list
   (shopping-list substitutable-ingredient-list)
   "Given a shopping list and a list of n substitutable
 ingredients, returns n new shopping lists, one for each
-variation. Does not modify input lists."
+variation. Does not modify input lists. All the returned lists
+use copies of the original shopping-list, produced by copy-tree.
+
+Note that shopping-list input must be a quoted symbol (see
+example below). As for shopping-add-ingredient-to-shopping-list,
+this doesn't feel right and should probably be changed.
+
+Example:
+
+  (setq my-shopping '((\"Cashew nuts\" t 0 nil)))
+  (shopping-add-substitutable-ingredients-to-shopping-list 'my-shopping
+      '((\"Black pepper\") (\"Red pepper\")))
+
+   --> (((\"Red pepper\" t 0 nil) (\"Cashew nuts\" t 0 nil))
+        ((\"Black pepper\" t 0 nil) (\"Cashew nuts\" t 0 nil)))
+
+"
   (loop with result = '()
         for i from 0
         while (< i (length substitutable-ingredient-list))
@@ -167,13 +232,21 @@ instead."
           while (< i (length ingredients))
           do
           (let ((ingredient-info (nth i ingredients)))
-            (if (stringp (first ingredient-info))
+            (if (stringp (first ingredient-info)) ; a single
+                                                  ; ingredient rather
+                                                  ; than a list of
+                                                  ; substitutable
+                                                  ; ingredients
                 (setq results
                       (mapcar (lambda (sl)
                                 (shopping-add-ingredient-to-shopping-list
                                  'sl ingredient-info))
                         results))
-              (let ((branched-results '()))
+              (let ((branched-results '())) ; the else clause for
+                                            ; above if, so
+                                            ; ingredient-info is a
+                                            ; list of substitutable
+                                            ; ingredients
                 (loop for j from 0
                       while (< j (length results))
                       do
@@ -185,6 +258,19 @@ instead."
                       (setq results branched-results)))))
           finally
           return results)))
+
+(defun shopping-sum-quantities (quantity-list)
+  "Sum up quantities in an even-length list.
+Example:
+  (shopping-sum-quantities '(5 kg 10 lb))
+    --> (* (float 95359237 -7) (var kg var-kg))
+"
+  (if (= 2 (length quantity-list))
+      (shopping-to-calc quantity-list)
+    (math-simplify-units
+     (list '+
+       (shopping-to-calc (list (first quantity-list) (second quantity-list)))
+       (shopping-sum-quantities (cdr (cdr quantity-list)))))))
 
 (defun shopping-shopping-list-entry-to-string (entry)
   (let* ((ingredient (first entry))

@@ -87,6 +87,7 @@
         "Vegetable oil" (:class "Oils")
         "Hazelnut oil" (:class "Oils")
         "Cinnamon" (:class "Dried spices")
+        "Cinnamon sticks" (:class "Dried spices")
         "Allspice" (:class "Dried spices")
         "Turmeric" (:class "Dried spices")
         "Cloves" (:class "Dried spices")
