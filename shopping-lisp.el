@@ -38,7 +38,7 @@
 ;; the following in your .emacs:
 ;;
 ;; (setq shopping-recipe-file "/home/johnsmith/recipes.el")
-;; (setq shopping-ingreedient-file "/home/johnsmith/ingredient-information.el")
+;; (setq shopping-ingredient-file "/home/johnsmith/ingredient-information.el")
 ;;
 ;; Examples of both files are provided with the package (recipes.el,
 ;; ingredient-information.el).
@@ -350,19 +350,28 @@ Example:
         (lambda (ing1 ing2)
           (string< (first ing1) (first ing2)))))
 
-(defun shopping-set-intersection (list-of-sets)
-  "Return a new list with the intersection of the given
-sets (just lists)."
-  (if (= (length list-of-sets) 1)
-      (copy-tree (first list-of-sets))
-    (if (> (length list-of-sets) 2)
-        (shopping-set-intersection
-         (append `((,first list-of-sets))
-                 (shopping-set-intersection (cdr list-of-sets))))
-      (let ((intersection '()))
-        (dolist element (first list-of-sets)
-                (if (memq element (second list-of-lists))
-                    ))))))  ;; up to here
+;; Before getting this working, makes sense to change the way shopping
+;; lists work so that they contain summed-up unitful quantities rather
+;; than lists of unitful quantities. Then it's easier to take the
+;; difference between two ingredients. Problem: sometimes ingredients
+;; are specified by volume, sometimes by weight, and we don't want to
+;; maintain density for all ingredients. A unitful quantity should
+;; therefore be a pair consisting of amount by weight and amount by
+;; volume.
+
+;; (defun shopping-set-intersection (list-of-sets)
+;;   "Return a new list with the intersection of the given
+;; sets (just lists)."
+;;   (if (= (length list-of-sets) 1)
+;;       (copy-tree (first list-of-sets))
+;;     (if (> (length list-of-sets) 2)
+;;         (shopping-set-intersection
+;;          (append `((,first list-of-sets))
+;;                  (shopping-set-intersection (cdr list-of-sets))))
+;;       (let ((intersection '()))
+;;         (dolist element (first list-of-sets)
+;;                 (if (memq element (second list-of-lists))
+;;                     ))))))  ;; up to here
 
 ;; Will use this to pull out the common ingredients from a set of
 ;; shopping lists, and then go through each list removing the common
