@@ -49,6 +49,87 @@
 
 (require 'calc-ext)
 
+(defun shopping-to-calc (shopping-sexp)
+  "Convert a shopping-lisp format quantity, e.g., (1.0 kg), to a
+calc expression.
+
+Example:
+  (shopping-to-calc '(1.0 kg))
+    --> (* (float 1 0) (var kg var-kg))
+"
+  (math-read-expr (format "%f %s" (float (first shopping-sexp))
+                          (symbol-name (second shopping-sexp)))))
+
+(defun shopping-sum-quantities (quantity-list)
+  "Sum up quantities in an even-length list.
+Example:
+  (shopping-sum-quantities '(5 kg 10 lb))
+    --> (* (float 95359237 -7) (var kg var-kg))
+"
+  (if (= 2 (length quantity-list))
+      (shopping-to-calc quantity-list)
+    (math-simplify-units
+     (list '+
+       (shopping-to-calc (list (first quantity-list) (second quantity-list)))
+       (shopping-sum-quantities (cdr (cdr quantity-list)))))))
+
+(defun try-sum-unitful (q1 q2)
+"Use math-simplify-units to try and sum two unitful quantities. If
+  their dimensions are different, return nil.
+
+Example:
+  (try-sum-unitful (shopping-to-calc '(10 kg)) (shopping-to-calc '(500 g)))
+    --> (* (float 105 -1) (var kg var-kg))
+
+  (try-sum-unitful (shopping-to-calc '(10 kg)) (shopping-to-calc '(5 l)))
+    --> nil
+"
+(let ((sum-of-quantities (math-simplify-units (list '+ q1 q2))))
+  (if (eq (car sum-of-quantities) '+) nil
+    sum-of-quantities)))
+
+(defun shopping-sum-quantities-base (quantity-list)
+  " Sum up a list of calc-format unitful quantities.
+
+Returns: a list whose elements are the quantity sums for each
+unique dimension in the input list.
+
+Example that sums up some masses and volumes:
+
+  (shopping-sum-quantities-base (list (shopping-to-calc '(10 kg)) (shopping-to-calc '(5 kg))
+                                      (shopping-to-calc '(5 l)) (shopping-to-calc '(10 pt))
+                                      (shopping-to-calc '(2 kg))))
+
+    --> ((* (float 973176473002 -11) (var l var-l)) (* (float 17 0) (var kg var-kg)))
+
+The return type here is a list of length two, because there are
+two unique dimensions in the input list (mass and volume).
+"
+  (if (= 1 (length quantity-list)) quantity-list
+    (if (= 0 (length quantity-list)) '()
+      (let* ((first-qty (car quantity-list))
+             (sum-of-remainder (shopping-sum-quantities-base (cdr quantity-list)))
+             (all-sums (mapcar (lambda (qty) (try-sum-unitful first-qty qty))
+                               sum-of-remainder))
+             (all-sums-dedup (delete nil (delete-dups all-sums))))
+        (if (> (length all-sums-dedup) 1)
+            (error "all-sums-dedup should be either () or ([SUM QTY])")
+          (if (equal all-sums-dedup '()) ; all sums were nil,
+                                        ; so first-qty has a
+                                        ; different dimension
+                                        ; to all other
+                                        ; quantities
+              (list first-qty sum-of-remainder)
+                                        ; TODO: modify
+                                        ; sum-of-remainder so it
+                                        ; includes the summed quantity
+                                        ; and return it
+            (progn
+              (setf (nth (position-if (lambda (x) (not (equal x nil))) all-sums)
+                         sum-of-remainder)
+                    (car all-sums-dedup))
+              sum-of-remainder)))))))
+
 (defun shopping-reload-data ()
   "Reload the recipe and ingredient files."
   (if (eq nil (boundp 'shopping-recipe-file))
@@ -57,12 +138,6 @@
       (error "Error: shopping-ingredient-file is not defined"))
   (load shopping-recipe-file)
   (load shopping-ingredient-file))
-
-(defun shopping-to-calc (shopping-sexp)
-  "Convert a shopping-lisp format quantity, e.g., (1.0 kg), to a
-calc expression."
-  (math-read-expr (format "%f %s" (float (first shopping-sexp))
-                          (symbol-name (second shopping-sexp)))))
 
 (defun shopping-get-quantity-from-ingredient-expr (ingredient-expr)
   "Get the quantity for an ingredient appearing in
@@ -100,25 +175,25 @@ a recipe is nil, i.e., unspecified."
   "Composite quantities are lists of length three. The first
 element is nil or t and indicates that an unspecified amount was
 required in some recipe. The second element is a number
-representing a unitless quantity, and the third is an even-length
-list of pairs representing unitful quantities, e.g., (2.0 kg 3
-g).
+representing a unitless quantity, and the third is a list of
+unitful calc quantities, each with unique dimensions.
 
-Example:
- (setq q1 '(nil 0 (2.0 kg 3.0 g)))
- (setq q2 '(nil 1 (3.0 kg)))
+Example 1:
+ (setq q1 (shopping-quantity-to-composite '()))
+ (setq q2 (shopping-quantity-to-composite '(1)))
  (shopping-add-composite-quantities q1 q2)
+  --> (t 1 nil)
 
- ->  (nil 1 (2.0 kg 3.0 g 3.0 kg))
+Example 2:
 
-Note: the append function is used to concatenate the unitful
-quantities. From the Emacs lisp manual: 'All arguments except the
-last one are copied, so none of the arguments is altered.' So in
-the above example, q1 and q2 are not altered.
+ (setq q1 (shopping-quantity-to-composite '(50 g)))
+ (setq q2 (shopping-quantity-to-composite '(10 ml)))
+ (shopping-add-composite-quantities q1 q2)
+   --> (nil 0 ((* (float 5 1) (var g var-g)) ((* (float 1 1) (var ml var-ml)))))
 "
   (list (or (first quantity1) (first quantity2))
          (+ (second quantity1) (second quantity2))
-        (append (third quantity1) (third quantity2))))
+        (shopping-sum-quantities-base (append (third quantity1) (third quantity2)))))
 
 (defun shopping-quantity-to-composite (quantity)
   "Convert a quantity appearing in a shopping list to a 'composite quantity'.
@@ -135,7 +210,7 @@ Example:
     --> (nil 50 nil)
 
   (shopping-quantity-to-composite '(10 g))
-   --> (nil 0 (10 g))
+    --> (nil 0 ((* (float 1 1) (var g var-g))))
 
 This function will not affect the input list, but note that for
 unitful quantities (third example above), the input list will
@@ -144,7 +219,7 @@ copied).
 "
   (cond ((shopping-is-unspecified-quantity quantity) '(t 0 ()))
         ((shopping-is-unitless-quantity quantity) `(nil ,(first quantity) ()))
-        ((shopping-is-unitful-quantity quantity) `(nil 0 ,quantity))))
+        ((shopping-is-unitful-quantity quantity) `(nil 0 ,(list (shopping-to-calc quantity))))))
 
 (defun shopping-add-ingredient-to-shopping-list (shopping-list ingredient-info)
   "Add an ingredient to the given shopping list. Note that
@@ -169,7 +244,8 @@ Example:
   (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Unsalted butter\" 50 g))
   (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Unsalted butter\" 100 g))
   (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Cashew nuts\"))
-    --> ((\"Cashew nuts\" t 0 nil) (\"Unsalted butter\" nil 0 (50 g 100 g)))
+
+    --> ((\"Cashew nuts\" t 0 nil) (\"Unsalted butter\" nil 0 ((* (float 15 1) (var g var-g)))))
 
 Note: there are no '.' symbols in the elements of the resulting
 alist. That's because the second value in each element is a
@@ -259,72 +335,6 @@ instead."
           finally
           return results)))
 
-(defun shopping-sum-quantities (quantity-list)
-  "Sum up quantities in an even-length list.
-Example:
-  (shopping-sum-quantities '(5 kg 10 lb))
-    --> (* (float 95359237 -7) (var kg var-kg))
-"
-  (if (= 2 (length quantity-list))
-      (shopping-to-calc quantity-list)
-    (math-simplify-units
-     (list '+
-       (shopping-to-calc (list (first quantity-list) (second quantity-list)))
-       (shopping-sum-quantities (cdr (cdr quantity-list)))))))
-
-(defun try-sum-unitful (q1 q2)
-"Use math-simplify-units to try and sum two unitful quantities. If
-  their dimensions are different, return nil.
-
-Example:
-  (try-sum-unitful (shopping-to-calc '(10 kg)) (shopping-to-calc '(500 g)))
-    --> (* (float 105 -1) (var kg var-kg))
-
-  (try-sum-unitful (shopping-to-calc '(10 kg)) (shopping-to-calc '(5 l)))
-    --> nil
-"
-(let ((sum-of-quantities (math-simplify-units (list '+ q1 q2))))
-  (if (eq (car sum-of-quantities) '+) nil
-    sum-of-quantities)))
-
-(defun shopping-sum-quantities-2 (quantity-list)
-  "Sums up a list of unitful quantities, allowing for different
-  dimensions. Quantities with different dimensions of course get
-  summed separately.
-
-  Returns a list of calc-type unitful quantities, each having a
-  unique dimension.
-
-Example:
-
- (shopping-sum-quantities-2 '(5 kg 1 l 100 lb 2 ml))
-  --> ((* (float 50359237 -6) (var kg var-kg)) (* (float 1002 -3) (var l var-l)))
-"
-  (if (= 2 (length quantity-list))
-      (list (shopping-to-calc quantity-list))
-    (let* ((first-qty (shopping-to-calc
-                       (list (car quantity-list) (cadr quantity-list))))
-           (sum-of-remainder (shopping-sum-quantities-2 (cddr quantity-list)))
-           (all-sums (mapcar (lambda (qty) (try-sum-unitful first-qty qty))
-                             sum-of-remainder))
-           (all-sums-dedup (delete nil (delete-dups all-sums))))
-      (if (> (length all-sums-dedup) 1)
-          (error "all-sums-dedup should be either () or ([SUM QTY])")
-        (if (equal all-sums-dedup '()) ; all sums were nil,
-                                        ; so first-qty has a
-                                        ; different dimension
-                                        ; to all other
-                                        ; quantities
-            (list first-qty sum-of-remainder)
-                                        ; TODO: modify
-                                        ; sum-of-remainder so it
-                                        ; includes the summed quantity
-                                        ; and return it
-          (progn
-            (setf (nth (position-if (lambda (x) (not (equal x nil))) all-sums) sum-of-remainder)
-                  (car all-sums-dedup))
-            sum-of-remainder))))))
-
 (defun shopping-shopping-list-entry-to-string (entry)
   (let* ((ingredient (first entry))
          (output-strings '()))
@@ -339,11 +349,12 @@ Example:
         (add-to-list 'output-strings
                        (format "%1.1f %s" n-items ingredient))))
       (if (not (eq nil (fourth entry)))
-          (add-to-list 'output-strings
-                       (format "%s %s"
-                               (math-format-value
-                                (shopping-sum-quantities (fourth entry)))
-                               ingredient)))
+          (setq output-strings
+                (append output-strings
+                        (mapcar (lambda (q) (format "%s %s"
+                                                    (math-format-value q)
+                                                    ingredient))
+                         (fourth entry)))))
       (mapconcat 'identity output-strings ", "))))
 
 (defun shopping-get-ingredient-category (ingredient)
