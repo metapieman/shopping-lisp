@@ -1,3 +1,10 @@
+- Change the internal shopping list representation so that if you add
+  a substitutable ingredient it goes into a separate list of
+  substitutable things, rather than generating N new shopping
+  lists. Then at the end, when printing out final list, print out
+  substitutable things and footnotes to them from the shared
+  ingredients in the main list.
+
 - The README says 'see recipes.el for examples', but fails that file
   fails to provide examples of the things described!
 
