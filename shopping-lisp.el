@@ -23,30 +23,6 @@
 ;; don't charge money for it, remove this notice, or hold anyone liable
 ;; for its results.
 
-;;; Commentary:
-
-;; shopping-lisp is a package designed to make grocery shopping
-;; easy. To install it, put shopping-list.el somewhere Emacs can see
-;; it (i.e., in one of the directories specified in the load-path
-;; variable), and put the following in your .emacs file:
-;;
-;; (load "shopping-lisp.el")
-;;
-;; In addition, you must tell shopping-lisp where to find the recipe
-;; file and the ingredient information file, by setting the variables
-;; shopping-recipe-file and shopping-ingredient-file. For example, put
-;; the following in your .emacs:
-;;
-;; (setq shopping-recipe-file "/home/johnsmith/recipes.el")
-;; (setq shopping-ingredient-file "/home/johnsmith/ingredient-information.el")
-;;
-;; Examples of both files are provided with the package (recipes.el,
-;; ingredient-information.el).
-;;
-;; Once installed, prepare your shopping list by doing:
-;;
-;; M-x shopping-prepare-list
-
 (require 'calc-ext)
 
 (defun shopping-to-calc (shopping-sexp)
@@ -83,11 +59,14 @@ unique dimension in the input list.
 
 Example that sums up some masses and volumes:
 
-  (shopping-sum-quantities (list (shopping-to-calc '(10 kg)) (shopping-to-calc '(5 kg))
-                                      (shopping-to-calc '(5 l)) (shopping-to-calc '(10 pt))
-                                      (shopping-to-calc '(2 kg))))
+  (shopping-sum-quantities
+     (list (shopping-to-calc '(10 kg))
+        (shopping-to-calc '(5 kg))
+        (shopping-to-calc '(5 l)) (shopping-to-calc '(10 pt))
+        (shopping-to-calc '(2 kg))))
 
-    --> ((* (float 973176473002 -11) (var l var-l)) (* (float 17 0) (var kg var-kg)))
+    --> ((* (float 973176473002 -11) (var l var-l))
+         (* (float 17 0) (var kg var-kg)))
 
 The return type here is a list of length two, because there are
 two unique dimensions in the input list (mass and volume).
@@ -209,7 +188,7 @@ copied).
         ((shopping-is-unitful-quantity quantity) `(nil 0 ,(list (shopping-to-calc quantity))))))
 
 (defun shopping-add-ingredient-to-shopping-list (shopping-list ingredient-info)
-  "Add an ingredient to the given shopping list. Note that
+  " Add an ingredient to the given shopping list. Note that
 shopping-list is altered by this function.
 
 shopping list is a symbol pointing to an alist from ingredient
@@ -284,7 +263,7 @@ Example:
         return result))
 
 (defun shopping-add-recipe-to-shopping-lists (shopping-lists recipe)
-  "shopping-lists is a list of shopping lists. We need this
+  " shopping-lists is a list of shopping lists. We need this
 because whenever there's an 'or' ingredient, a shopping list
 branches into two or more lists. This function does not modify
 the input lists, it creates deep copies and returns those
@@ -322,7 +301,22 @@ instead."
           finally
           return results)))
 
+
 (defun shopping-shopping-list-entry-to-string (entry)
+" Convert an entry in the internal representation of a shopping
+list to a readable string.
+
+The internal representation of a shopping list looks like this:
+
+  ((\"Cashew nuts\" t 0 nil) (\"Unsalted butter\" nil 0 ((* (float 15 1) (var g var-g)))))
+
+Example:
+
+  (shopping-shopping-list-entry-to-string
+      '(\"Unsalted butter\" nil 0 ((* (float 15 1) (var g var-g)))))
+
+    --> \"150. g Unsalted butter\"
+"
   (let* ((ingredient (first entry))
          (output-strings '()))
     (progn
@@ -357,8 +351,7 @@ instead."
         (if (eq nil (cdr (assoc category shopping-alist)))
             (setq shopping-alist (cons `(,category . (,ingredient-info))
                                        shopping-alist))
-          (nconc (cdr (assoc category shopping-alist)) `(,ingredient-info))
-          )))
+          (nconc (cdr (assoc category shopping-alist)) `(,ingredient-info)))))
     shopping-alist))
 
 (defun shopping-pprint-shopping-list-by-category (shopping-list)

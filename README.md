@@ -20,5 +20,26 @@ this will result in multiple shopping lists being produced, one for
 each combination of ingredients, which is somewhat cumbersome; this
 functionality will hopefully be improved in future.
 
-For installation and usage instructions, see the commentary in
-shopping-lisp.el.
+Installation and usage
+======================
+
+To install, put shopping-list.el somewhere Emacs can see it (i.e., in
+one of the directories specified in the load-path variable), and put
+the following in your .emacs file:
+
+(load "shopping-lisp.el")
+
+In addition, you must tell shopping-lisp where to find the recipe
+file and the ingredient information file, by setting the variables
+shopping-recipe-file and shopping-ingredient-file. For example, put
+the following in your .emacs:
+
+(setq shopping-recipe-file "/home/johnsmith/recipes.el")
+(setq shopping-ingredient-file "/home/johnsmith/ingredient-information.el")
+
+Examples of both files are provided with the package (recipes.el,
+ingredient-information.el).
+
+Once installed, prepare your shopping list by doing:
+
+M-x shopping-prepare-list
