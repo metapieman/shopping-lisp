@@ -75,7 +75,7 @@ Example:
   (if (eq (car sum-of-quantities) '+) nil
     sum-of-quantities)))
 
-(defun shopping-sum-quantities-base (quantity-list)
+(defun shopping-sum-quantities (quantity-list)
   " Sum up a list of calc-format unitful quantities.
 
 Returns: a list whose elements are the quantity sums for each
@@ -83,7 +83,7 @@ unique dimension in the input list.
 
 Example that sums up some masses and volumes:
 
-  (shopping-sum-quantities-base (list (shopping-to-calc '(10 kg)) (shopping-to-calc '(5 kg))
+  (shopping-sum-quantities (list (shopping-to-calc '(10 kg)) (shopping-to-calc '(5 kg))
                                       (shopping-to-calc '(5 l)) (shopping-to-calc '(10 pt))
                                       (shopping-to-calc '(2 kg))))
 
@@ -95,7 +95,7 @@ two unique dimensions in the input list (mass and volume).
   (if (= 1 (length quantity-list)) quantity-list
     (if (= 0 (length quantity-list)) '()
       (let* ((first-qty (car quantity-list))
-             (sum-of-remainder (shopping-sum-quantities-base (cdr quantity-list)))
+             (sum-of-remainder (shopping-sum-quantities (cdr quantity-list)))
              (all-sums (mapcar (lambda (qty) (try-sum-unitful first-qty qty))
                                sum-of-remainder))
              (all-sums-dedup (delete nil (delete-dups all-sums))))
@@ -180,7 +180,7 @@ Example 2:
 "
   (list (or (first quantity1) (first quantity2))
          (+ (second quantity1) (second quantity2))
-        (shopping-sum-quantities-base (append (third quantity1) (third quantity2)))))
+        (shopping-sum-quantities (append (third quantity1) (third quantity2)))))
 
 (defun shopping-quantity-to-composite (quantity)
   "Convert a quantity appearing in a shopping list to a 'composite quantity'.
