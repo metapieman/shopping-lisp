@@ -6,3 +6,7 @@
 - Should be able to substitute a list of ingredients for another list,
   e.g., instead of 'Curry paste', could have a list of all the
   ingredients required to make curry paste.
+
+- Don't complain if ingredient is not in ingredients list (i.e., we
+  don't know its category). Just put it in an 'Unknown category'
+  bucket.
