@@ -308,7 +308,10 @@ list to a readable string.
 
 The internal representation of a shopping list looks like this:
 
-  ((\"Cashew nuts\" t 0 nil) (\"Unsalted butter\" nil 0 ((* (float 15 1) (var g var-g)))))
+  (
+   (\"Cashew nuts\" t 0 nil)
+   (\"Unsalted butter\" nil 0 ((* (float 15 1) (var g var-g))))
+  )
 
 Example:
 
@@ -342,6 +345,10 @@ Example:
   (getf (lax-plist-get shopping-ingredients ingredient) :class))
 
 (defun shopping-shopping-list-by-category (shopping-list)
+" Takes a shopping list and returns an association list whose
+keys are categories and whose values are lists containing
+ingredients in the given category.
+"
   (let ((shopping-alist '()))
     (dolist (ingredient-info shopping-list)
       (let* ((ingredient (first ingredient-info))
@@ -366,16 +373,6 @@ Example:
                       (shopping-shopping-list-entry-to-string ingredient)))))
     output-string))
 
-(defun shopping-pprint-shopping-list (shopping-list)
-  (if (not (length shopping-list))
-      ""
-    (let ((first-entry-string
-           (shopping-shopping-list-entry-to-string (car shopping-list))))
-      (if (= 1 (length shopping-list))
-          first-entry-string
-        (format "%s\n%s" first-entry-string
-                (shopping-pprint-shopping-list (cdr shopping-list)))))))
-
 (defun shopping-get-digits-from-user ()
   (let ((digits '())
         (new-digit nil))
@@ -393,15 +390,6 @@ Example:
   (sort shopping-list
         (lambda (ing1 ing2)
           (string< (first ing1) (first ing2)))))
-
-;; Before getting this working, makes sense to change the way shopping
-;; lists work so that they contain summed-up unitful quantities rather
-;; than lists of unitful quantities. Then it's easier to take the
-;; difference between two ingredients. Problem: sometimes ingredients
-;; are specified by volume, sometimes by weight, and we don't want to
-;; maintain density for all ingredients. A unitful quantity should
-;; therefore be a pair consisting of amount by weight and amount by
-;; volume.
 
 ;; (defun shopping-set-intersection (list-of-sets)
 ;;   "Return a new list with the intersection of the given
