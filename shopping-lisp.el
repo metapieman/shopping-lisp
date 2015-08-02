@@ -60,19 +60,6 @@ Example:
   (math-read-expr (format "%f %s" (float (first shopping-sexp))
                           (symbol-name (second shopping-sexp)))))
 
-(defun shopping-sum-quantities (quantity-list)
-  "Sum up quantities in an even-length list.
-Example:
-  (shopping-sum-quantities '(5 kg 10 lb))
-    --> (* (float 95359237 -7) (var kg var-kg))
-"
-  (if (= 2 (length quantity-list))
-      (shopping-to-calc quantity-list)
-    (math-simplify-units
-     (list '+
-       (shopping-to-calc (list (first quantity-list) (second quantity-list)))
-       (shopping-sum-quantities (cdr (cdr quantity-list)))))))
-
 (defun try-sum-unitful (q1 q2)
 "Use math-simplify-units to try and sum two unitful quantities. If
   their dimensions are different, return nil.
