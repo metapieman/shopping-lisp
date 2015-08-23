@@ -51,6 +51,23 @@ Example:
   (if (eq (car sum-of-quantities) '+) nil
     sum-of-quantities)))
 
+(defun unitful-geq-zero (q)
+  "determine if a unitful quantity is >=0."
+  (if (eq (first q) '*)
+      (>= (second (second q)) 0) 't))
+
+(defun try-min-unitful (q1 q2)
+  "Find the minimum of two unitful quantities. Returns nil if the
+units are different."
+  (let ((difference (math-simplify-units (list '- q1 q2))))
+    (if (eq (car difference) '-) nil
+        ; if q1 and q2 are equal then the difference is (float 0
+        ; 0). In this case, just return one of them.
+      (if (eq (car difference) 'float) q1
+        (if (unitful-geq-zero difference)
+            q2
+          q1)))))
+
 (defun shopping-sum-quantities (quantity-list)
   " Sum up a list of calc-format unitful quantities.
 
@@ -391,19 +408,83 @@ ingredients in the given category.
         (lambda (ing1 ing2)
           (string< (first ing1) (first ing2)))))
 
-;; (defun shopping-set-intersection (list-of-sets)
-;;   "Return a new list with the intersection of the given
-;; sets (just lists)."
-;;   (if (= (length list-of-sets) 1)
-;;       (copy-tree (first list-of-sets))
-;;     (if (> (length list-of-sets) 2)
-;;         (shopping-set-intersection
-;;          (append `((,first list-of-sets))
-;;                  (shopping-set-intersection (cdr list-of-sets))))
-;;       (let ((intersection '()))
-;;         (dolist element (first list-of-sets)
-;;                 (if (memq element (second list-of-lists))
-;;                     ))))))  ;; up to here
+(defun quantity-intersection-unspecified (q1 q2)
+     "Intersection of two unspecified quantities, each of which
+     should be either nil or 't"
+     (if (and (eq q1 't) (eq q2 't)) 't))
+
+(defun quantity-intersection-unitless (q1 q2)
+     "Intersection of two unitless quantities, each of which
+     should be numbers. This is just the minimum of the two."
+     (min q1 q2))
+
+(defun quantity-intersection-unitful (l1 l2)
+     "Intersection of two unitful quantity lists."
+     (let ((intersection '()))
+       (dolist (e1 l1 intersection)
+               (dolist (e2 l2)
+                       (let ((element-intersection (try-min-unitful e1 e2)))
+                         (if element-intersection
+                             (setq intersection
+                                   (append intersection element-intersection))))))))
+
+(defun ingredient-intersection (ing1 ing2)
+  "Intersection of two ingredient quantities. Returns nil if the
+ingredients are different. If they are the same, then calculates
+a sensible intersection of them. Also returns nil if there's no
+sensible intersection of quantities, even if the ingredient is
+the same.
+
+The 2nd, 3rd, 4th elements make up a 'composite quantity' as
+explained in doc for shopping-add-composite-quantities.
+
+Example 1:
+
+  (ingredient-intersection
+   '(\"Unsalted butter\" nil 1 ((* (float 15 1) (var g var-g))))
+   '(\"Unsalted butter\" nil 2 ((* (float 1 1) (var kg var-kg)))))
+
+  ---> (nil 1 (* (float 15 1) (var g var-g)))
+
+Example 2 (in which there's no sensible intersection):
+
+ (ingredient-intersection
+   '(\"Unsalted butter\" nil 1 ())
+   '(\"Unsalted butter\" nil 0 ((* (float 15 1) (var g var-g)))))
+
+  ---> nil
+"
+  (if (string= (car ing1) (car ing2))
+      (let ((intersection
+             (list (quantity-intersection-unspecified (second ing1) (second ing2))
+                   (quantity-intersection-unitless    (third  ing1) (third  ing2))
+                   (quantity-intersection-unitful     (fourth ing1) (fourth ing2)))))
+        (if (and (not (first intersection)) (= 0 (second intersection)) (not (third intersection)))
+            nil
+            (append (list (car ing1)) intersection)))))
+
+(defun shopping-list-intersection (list-of-lists)
+  "Return a new list with the intersection of the given
+sets (just lists).
+
+UNTESTED.
+"
+  (if (= (length list-of-lists) 1)
+      (copy-tree (first list-of-lists))
+    (if (> (length list-of-lists) 2)
+        (shopping-set-intersection
+         (append `((,first list-of-lists))
+                 (shopping-set-intersection (cdr list-of-lists))))
+      ;; if we're here, then list-of-lists has length 2
+      (let ((intersection '()))
+        (dolist (e1 (first list-of-lists) intersection)
+          (dolist (e2 (first list-of-lists))
+            (let ((ingredient-intersection e1 e2))
+              (if ingredient-intersection
+                  (setq intersection
+                        (append intersection ingredient-intersection))))))))))
+
+
 
 ;; Will use this to pull out the common ingredients from a set of
 ;; shopping lists, and then go through each list removing the common
