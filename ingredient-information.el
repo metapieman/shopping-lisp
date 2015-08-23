@@ -163,6 +163,7 @@
         "Sambal olek" (:class "Condiments")
         "Beansprouts" (:class "Fresh vegetables")
         "Iceberg lettuce" (:class "Fresh vegetables")
+        "Radishes" (:class "Fresh vegetables")
         "Breadcrumbs" (:class "Baked goods")
         "Stale bread" (:class "Baked goods")
         "Fresh broad beans" (:class "Fresh vegetables")
