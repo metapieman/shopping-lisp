@@ -88,7 +88,7 @@ Example that sums up some masses and volumes:
 The return type here is a list of length two, because there are
 two unique dimensions in the input list (mass and volume).
 "
-  (if (= 1 (length quantity-list)) (first quantity-list)
+  (if (= 1 (length quantity-list)) quantity-list
     (if (= 0 (length quantity-list)) '()
       (let* ((first-qty (car quantity-list))
              (sum-of-remainder (shopping-sum-quantities (cdr quantity-list)))
@@ -102,7 +102,7 @@ two unique dimensions in the input list (mass and volume).
                                         ; different dimension
                                         ; to all other
                                         ; quantities
-              (list first-qty sum-of-remainder)
+              (append (list first-qty) sum-of-remainder)
                                         ; TODO: modify
                                         ; sum-of-remainder so it
                                         ; includes the summed quantity
