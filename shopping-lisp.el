@@ -426,7 +426,7 @@ ingredients in the given category.
                        (let ((element-intersection (try-min-unitful e1 e2)))
                          (if element-intersection
                              (setq intersection
-                                   (append intersection element-intersection))))))))
+                                   (append intersection (list element-intersection)))))))))
 
 (defun ingredient-intersection (ing1 ing2)
   "Intersection of two ingredient quantities. Returns nil if the
@@ -464,34 +464,23 @@ Example 2 (in which there's no sensible intersection):
             (append (list (car ing1)) intersection)))))
 
 (defun shopping-list-intersection (list-of-lists)
-  "Return a new list with the intersection of the given
-sets (just lists).
-
-UNTESTED.
-"
+  "Return a new shopping list with the intersection of the given
+shopping lists. A shopping list is a list constructed with calls
+to shopping-add-ingredient-to-shopping-list."
   (if (= (length list-of-lists) 1)
       (copy-tree (first list-of-lists))
     (if (> (length list-of-lists) 2)
-        (shopping-set-intersection
-         (append `((,first list-of-lists))
-                 (shopping-set-intersection (cdr list-of-lists))))
+        (shopping-list-intersection
+         (append (list (first list-of-lists))
+                 (list (shopping-list-intersection (cdr list-of-lists)))))
       ;; if we're here, then list-of-lists has length 2
       (let ((intersection '()))
         (dolist (e1 (first list-of-lists) intersection)
-          (dolist (e2 (first list-of-lists))
-            (let ((ingredient-intersection e1 e2))
-              (if ingredient-intersection
+          (dolist (e2 (second list-of-lists))
+            (let ((ii (ingredient-intersection e1 e2)))
+              (if ii
                   (setq intersection
-                        (append intersection ingredient-intersection))))))))))
-
-
-
-;; Will use this to pull out the common ingredients from a set of
-;; shopping lists, and then go through each list removing the common
-;; ingredients to get the difference lists.
-
-;; (defun shopping-get-common-ingredients (shopping-lists)
-;;   )
+                        (append intersection (list ii)))))))))))
 
 (defun shopping-prepare-list ()
   (interactive)
