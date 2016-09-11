@@ -5,7 +5,7 @@ Emacs package to create shopping lists from recipes.
 
 This aim of this package is to make grocery shopping easy. The user
 selects which recipes to make, and a shopping list is created with the
-ingredients nicely sorted into categories (vegetables, grains, meat,
+ingredients nicely sorted into categories (vegetables, fruit, grains,
 etc.). It is easy to add recipes and ingredient categories.
 
 Recipes are quite flexible: ingredients can be input with a quantity
