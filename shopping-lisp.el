@@ -175,8 +175,30 @@ Example 2:
    --> (nil 0 ((* (float 5 1) (var g var-g)) ((* (float 1 1) (var ml var-ml)))))
 "
   (list (or (first quantity1) (first quantity2))
-         (+ (second quantity1) (second quantity2))
+        (+ (second quantity1) (second quantity2))
         (shopping-sum-quantities (append (third quantity1) (third quantity2)))))
+
+
+;; TO-DO, analagous to shopping-sum-quantities. Should return error if
+;; q2 is not entirely contained in q1.
+(defun shopping-diff-quantities (q1 q2) nil)
+
+
+;; This won't work until the stub function shopping-diff-quantities
+;; above is filled in.
+(defun shopping-remove-composite-quantity (q1 q2)
+  "Remove composite quantity q2 from quantity q1. If quantity q2
+is not contained in q1, raise error."
+  (progn
+    (if (and (not (first q1)) (first q2))
+        (error "removal of q2 from q1 failed because q2 has an
+indefinite amount but q1 does not"))
+    (if (< (second q1) (second q2))
+        (error "removal of q2 from q1 failed because there are more units in q2"))
+    (list (and (first q1) (first q2))
+          (- (second q1) (second q2))
+          (shopping-diff-quantities (third q1) (third q2)))))
+
 
 (defun shopping-quantity-to-composite (quantity)
   "Convert a quantity appearing in a shopping list to a 'composite quantity'.
