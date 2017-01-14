@@ -4,7 +4,7 @@ shopping-lisp
 Emacs package to create shopping lists from recipes.
 
 This aim of this package is to make grocery shopping easy. You
-selects which recipes to make, and a shopping list is created with the
+select which recipes to make, and a shopping list is created with the
 ingredients nicely sorted into categories (vegetables, fruit, grains,
 etc.). It is easy to add recipes and ingredient categories.
 
