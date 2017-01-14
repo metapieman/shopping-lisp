@@ -219,10 +219,18 @@ is not contained in q1, raise error."
 indefinite amount but q1 does not"))
     (if (< (second q1) (second q2))
         (error "removal of q2 from q1 failed because there are more units in q2"))
-    (list (and (first q1) (first q2))
+    (list (first q1)
           (- (second q1) (second q2))
           (shopping-diff-quantities (third q1) (third q2)))))
 
+(defun shopping-subtract-lists (l1 l2)
+  "Subtract shopping list 2 from shopping list 1. If list 2 is
+  not entirely contained in list 1, raise error."
+  (if (= (length l2) 1)
+      (if (string= (caar l1) (caar l2))
+          (append (list (caar l1) (shopping-remove-composite-quantity (cdar l1) (cdar l2))) (cdr l1))
+        (append (list (car l1)) (shopping-subtract-lists (cdr l1) l2)))
+    (shopping-subtract-lists (shopping-subtract-lists l1 (list (car l2))) (cdr l2))))
 
 (defun shopping-quantity-to-composite (quantity)
   "Convert a quantity appearing in a shopping list to a 'composite quantity'.
@@ -508,6 +516,21 @@ Example 2 (in which there's no sensible intersection):
         (if (and (not (first intersection)) (= 0 (second intersection)) (not (third intersection)))
             nil
             (append (list (car ing1)) intersection)))))
+
+(defun example-list ()
+  "Return an example shopping list for testing."
+     (let (l '())
+       (shopping-add-ingredient-to-shopping-list 'l '("Tomatoes" 50 g))
+       (shopping-add-ingredient-to-shopping-list 'l '("Tomatoes" 1))
+       l))
+
+(defun example-list-2 ()
+  "Return an example shopping list for testing."
+     (let (l '())
+       (shopping-add-ingredient-to-shopping-list 'l '("Tomatoes"))
+       (shopping-add-ingredient-to-shopping-list 'l '("Tomatoes" 1))
+       (shopping-add-ingredient-to-shopping-list 'l '("Tomatoes" 100 g))
+       l))
 
 (defun shopping-list-intersection (list-of-lists)
   "Return a new shopping list with the intersection of the given
