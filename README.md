@@ -23,9 +23,9 @@ or neither:
 See recipes.el for more examples. Many different units are
 supported, thanks to the calc package which is used under the hood.
 
-It is also possible to specify ingredient alternatives (e.g., to
-specify either 1 green chilli or 1 red chilli put <code>(("Red chillis"
-1) ("Green chillis" 1))</code> into the recipe's ingredient list).
+It is also possible to specify ingredient alternatives. For example, *either* 1 green chilli or 1 red chilli would be represented like this in the ingredient list:
+
+<code>(("Red chillis" 1) ("Green chillis" 1))</code>.
 
 Installation and usage
 ======================
