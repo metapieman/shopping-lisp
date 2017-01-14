@@ -36,6 +36,9 @@ the following in your .emacs:
 
 <code>
 (setq shopping-recipe-file "/home/johnsmith/recipes.el")
+</code>
+
+<code>
 (setq shopping-ingredient-file "/home/johnsmith/ingredient-information.el")
 </code>
 
