@@ -14,8 +14,8 @@ Recipes are quite flexible: ingredients can be input with a quantity
 supported, thanks to the calc package which is used under the hood.
 
 It is also possible to specify ingredient alternatives (e.g., to
-specify either 1 green chilli or 1 red chilli put (("Red chillis"
-1) ("Green chillis" 1)) into the recipe's ingredient list). Currently
+specify either 1 green chilli or 1 red chilli put <code>(("Red chillis"
+1) ("Green chillis" 1))</code> into the recipe's ingredient list). Currently
 this will result in multiple shopping lists being produced, one for
 each combination of ingredients, which is somewhat cumbersome; this
 functionality will hopefully be improved in future.
