@@ -56,6 +56,11 @@ Example:
   (if (eq (first q) '*)
       (>= (second (second q)) 0) 't))
 
+(defun unitful-eq-zero (q)
+  "determine if a unitful quantity is zero."
+  (if (eq (first q) '*)
+      (= (second (second q)) 0) 't))
+
 (defun try-min-unitful (q1 q2)
   "Find the minimum of two unitful quantities. Returns nil if the
 units are different."
@@ -210,6 +215,9 @@ Example 2:
         (shopping-diff-quantities (shopping-diff-quantities q1 (cdr q2)) (list (car q2)))))))
 
 
+(defun logical-to-int (a) (if a 1 0))
+(defun int-to-logical (a) (if (= 0 a) nil t))
+
 (defun shopping-remove-composite-quantity (q1 q2)
   "Remove composite quantity q2 from quantity q1. If quantity q2
 is not contained in q1, raise error."
@@ -219,16 +227,27 @@ is not contained in q1, raise error."
 indefinite amount but q1 does not"))
     (if (< (second q1) (second q2))
         (error "removal of q2 from q1 failed because there are more units in q2"))
-    (list (first q1)
+    (list (int-to-logical (logxor (logical-to-int (first q1)) (logical-to-int (first q2))))
           (- (second q1) (second q2))
           (shopping-diff-quantities (third q1) (third q2)))))
+
+(defun composite-quantity-is-zero (q)
+     (and (not (first q)) (= 0 (second q))
+          (if (eq (third q) nil) t
+            (every 'unitful-eq-zero (third q)))))
 
 (defun shopping-subtract-lists (l1 l2)
   "Subtract shopping list 2 from shopping list 1. If list 2 is
   not entirely contained in list 1, raise error."
   (if (= (length l2) 1)
       (if (string= (caar l1) (caar l2))
-          (append (list (caar l1) (shopping-remove-composite-quantity (cdar l1) (cdar l2))) (cdr l1))
+          (let ((difference (shopping-remove-composite-quantity (cdar l1) (cdar l2))))
+            ; if difference is a zero composite quantity (test with
+            ; composite-quantity-is-zero), then should just return (cdr l1)
+            (if (composite-quantity-is-zero difference) (cdr l1)
+              (append (list (append (list (caar l1)) difference))
+                      (cdr l1)))
+          )
         (append (list (car l1)) (shopping-subtract-lists (cdr l1) l2)))
     (shopping-subtract-lists (shopping-subtract-lists l1 (list (car l2))) (cdr l2))))
 
@@ -532,6 +551,12 @@ Example 2 (in which there's no sensible intersection):
        (shopping-add-ingredient-to-shopping-list 'l '("Tomatoes" 100 g))
        l))
 
+(defun example-list-3 ()
+  "Return an example shopping list for testing."
+     (let (l '())
+       (shopping-add-ingredient-to-shopping-list 'l '("Tomatoes" 50 g))
+       l))
+
 (defun shopping-list-intersection (list-of-lists)
   "Return a new shopping list with the intersection of the given
 shopping lists. A shopping list is a list constructed with calls
@@ -568,17 +593,25 @@ to shopping-add-ingredient-to-shopping-list."
       (setq shopping-lists
             (shopping-add-recipe-to-shopping-lists shopping-lists
                                                    (nth n shopping-recipes))))
+    (setq common-ingredients-list (shopping-list-intersection shopping-lists))
     (setq shopping-list-buffer (get-buffer-create "*Shopping lists*"))
     (set-buffer shopping-list-buffer)
     (erase-buffer)
-    (princ "   *** Recipes ***\n\n" shopping-list-buffer)
+    (princ "   ****** Recipes ******\n\n" shopping-list-buffer)
     (dolist (n recipe-numbers)
       (princ (format "%s\n"(getf (nth n shopping-recipes) :title))
              shopping-list-buffer))
+    (princ (format "\n   ****** You need all of the following ******\n%s\n"
+                   (shopping-pprint-shopping-list-by-category
+                    common-ingredients-list))
+           shopping-list-buffer)
+    (princ (format "\n ****** Choose one of these remaining lists ******\n")
+           shopping-list-buffer)
     (dotimes (i (length shopping-lists))
-      (princ (format "\n   *** List %i ***\n%s\n"
+      (princ (format "\n   *** Option %i ***\n%s\n"
                      i
                      (shopping-pprint-shopping-list-by-category
-                      (nth i shopping-lists)))
+                      (shopping-subtract-lists (nth i shopping-lists)
+                                               common-ingredients-list)))
              shopping-list-buffer))
     (display-buffer "*Shopping lists*")))
