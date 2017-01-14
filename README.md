@@ -8,9 +8,19 @@ selects which recipes to make, and a shopping list is created with the
 ingredients nicely sorted into categories (vegetables, fruit, grains,
 etc.). It is easy to add recipes and ingredient categories.
 
-Recipes are quite flexible: ingredients can be input with a quantity
-(e.g., 100 ml of olive oil), a count (e.g., 10 bay leaves), or neither
-(e.g., flour). See recipes.el for examples. Many different units are
+Recipes are quite flexible: ingredients can be input with a quantity:
+
+<code>("Olive oil" 100 ml)</code>,
+
+a count:
+
+<code>("Bay leaves" 2)</code>
+
+or neither:
+
+<code>("Flour")</code>.
+
+See recipes.el for more examples. Many different units are
 supported, thanks to the calc package which is used under the hood.
 
 It is also possible to specify ingredient alternatives (e.g., to
