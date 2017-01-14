@@ -102,7 +102,7 @@ two unique dimensions in the input list (mass and volume).
                                         ; different dimension
                                         ; to all other
                                         ; quantities
-              (append (list first-qty) sum-of-remainer)
+              (append (list first-qty) sum-of-remainder)
                                         ; TODO: modify
                                         ; sum-of-remainder so it
                                         ; includes the summed quantity
@@ -179,7 +179,6 @@ Example 2:
         (shopping-sum-quantities (append (third quantity1) (third quantity2)))))
 
 
-;; TO-DO, doesn't quite work yet.
 (defun shopping-diff-quantities (q1 q2)
   "q1, q2 are lists of unitful quantities, each element in list
   having different units. This removes q2 from q1, in the sense
@@ -195,7 +194,8 @@ Example 2:
 
   (shopping-diff-quantities
      (list (shopping-to-calc '(10 kg)) (shopping-to-calc '(10 l)))
-     (list (shopping-to-calc '( 1  g)) (shopping-to-calc '(1 ml))))
+     (list (shopping-to-calc '( 1  g)) (shopping-to-calc '(1 ml)))
+  )
 "
   (let ((q2-length (length q2)))
     (if (= 0 q2-length) (copy-tree q1)
@@ -204,13 +204,12 @@ Example 2:
                  (new-list '()))
             (dolist (qty q1 new-list)
               (let* ((difference (math-simplify-units (list '- qty qty-to-remove))))
-                (if (eq (car difference) '-) (append '(qty) new-list)
-                    (setq new-list (append (list difference) new-list))))))
-        (shopping-diff-quantities (shopping-diff-quantities q1 (cdr q2)) (car q2))))))
+                (if (eq (car difference) '-)
+                    (setq new-list (append (list qty) new-list))
+                  (setq new-list (append (list difference) new-list))))))
+        (shopping-diff-quantities (shopping-diff-quantities q1 (cdr q2)) (list (car q2)))))))
 
 
-;; This won't work until the stub function shopping-diff-quantities
-;; above is filled in.
 (defun shopping-remove-composite-quantity (q1 q2)
   "Remove composite quantity q2 from quantity q1. If quantity q2
 is not contained in q1, raise error."
