@@ -14,7 +14,7 @@ Recipes are quite flexible: ingredients can be input with a quantity:
 
 a count:
 
-<code>("Bay leaves" 2)</code>
+<code>("Bay leaves" 2)</code>,
 
 or neither:
 
