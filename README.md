@@ -27,19 +27,21 @@ To install, put shopping-list.el somewhere Emacs can see it (i.e., in
 one of the directories specified in the load-path variable), and put
 the following in your .emacs file:
 
-(load "shopping-lisp.el")
+<code>(load "shopping-lisp.el")</code>
 
 In addition, you must tell shopping-lisp where to find the recipe
 file and the ingredient information file, by setting the variables
 shopping-recipe-file and shopping-ingredient-file. For example, put
 the following in your .emacs:
 
+<code>
 (setq shopping-recipe-file "/home/johnsmith/recipes.el")
 (setq shopping-ingredient-file "/home/johnsmith/ingredient-information.el")
+</code>
 
 Examples of both files are provided with the package (recipes.el,
 ingredient-information.el).
 
 Once installed, prepare your shopping list by doing:
 
-M-x shopping-prepare-list
+<code>M-x shopping-prepare-list</code>
