@@ -455,10 +455,10 @@ ingredients in the given category.
   (let ((by-category (shopping-shopping-list-by-category shopping-list))
         (output-string ""))
     (dolist (category by-category)
-      (setq output-string (format "%s\n%s" output-string (car category)))
+      (setq output-string (format "%s\n- %s" output-string (car category)))
       (dolist (ingredient (cdr category))
         (setq output-string
-              (format "%s\n  %s"
+              (format "%s\n    + %s"
                       output-string
                       (shopping-shopping-list-entry-to-string ingredient)))))
     output-string))
@@ -597,21 +597,24 @@ to shopping-add-ingredient-to-shopping-list."
     (setq shopping-list-buffer (get-buffer-create "*Shopping lists*"))
     (set-buffer shopping-list-buffer)
     (erase-buffer)
-    (princ "   ****** Recipes ******\n\n" shopping-list-buffer)
+    (princ "# Recipes\n\n" shopping-list-buffer)
     (dolist (n recipe-numbers)
-      (princ (format "%s\n"(getf (nth n shopping-recipes) :title))
+      (princ (format "- %s\n"(getf (nth n shopping-recipes) :title))
              shopping-list-buffer))
-    (princ (format "\n   ****** You need all of the following ******\n%s\n"
+    (princ (format "\n# Ingredients\n\n## You must get these\n%s\n"
                    (shopping-pprint-shopping-list-by-category
                     common-ingredients-list))
            shopping-list-buffer)
-    (princ (format "\n ****** Choose one of these remaining lists ******\n")
-           shopping-list-buffer)
-    (dotimes (i (length shopping-lists))
-      (princ (format "\n   *** Option %i ***\n%s\n"
-                     i
-                     (shopping-pprint-shopping-list-by-category
-                      (shopping-subtract-lists (nth i shopping-lists)
-                                               common-ingredients-list)))
-             shopping-list-buffer))
+    (if (> (length shopping-lists) 1)
+        (progn
+        (princ (format "\n## You must choose one of these lists and get everything\n")
+               shopping-list-buffer)
+        (dotimes (i (length shopping-lists))
+          (princ (format "\n### Option %i\n%s\n"
+                         i
+                         (shopping-pprint-shopping-list-by-category
+                          (shopping-subtract-lists (nth i shopping-lists)
+                                                   common-ingredients-list)))
+                 shopping-list-buffer))))
     (display-buffer "*Shopping lists*")))
+
