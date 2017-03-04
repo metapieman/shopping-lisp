@@ -8,6 +8,10 @@ select which recipes to make, and a shopping list is created with the
 ingredients nicely sorted into categories (vegetables, fruit, grains,
 etc.). It is easy to add recipes and ingredient categories.
 
+The final shopping list is in Pandoc Markdown format, so it can easily
+be converted to many other formats such as PDF or HTML, although it is
+perfectly readable as-is.
+
 Recipes are quite flexible: ingredients can be input with a quantity:
 
 <code>("Olive oil" 100 ml)</code>,
