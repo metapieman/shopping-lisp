@@ -577,6 +577,8 @@ to shopping-add-ingredient-to-shopping-list."
                         (append intersection (list ii)))))))))))
 
 (defun shopping-prepare-list ()
+  "Prompt user for recipe choices, calculate shopping list(s),
+and print it to *Shopping* buffer in Pandoc Markdown format."
   (interactive)
   (shopping-reload-data)
   (let ((recipe-buffer (get-buffer-create "*Recipes*"))
@@ -594,7 +596,7 @@ to shopping-add-ingredient-to-shopping-list."
             (shopping-add-recipe-to-shopping-lists shopping-lists
                                                    (nth n shopping-recipes))))
     (setq common-ingredients-list (shopping-list-intersection shopping-lists))
-    (setq shopping-list-buffer (get-buffer-create "*Shopping lists*"))
+    (setq shopping-list-buffer (get-buffer-create "*Shopping*"))
     (set-buffer shopping-list-buffer)
     (erase-buffer)
     (princ "# Recipes\n\n" shopping-list-buffer)
@@ -616,5 +618,15 @@ to shopping-add-ingredient-to-shopping-list."
                           (shopping-subtract-lists (nth i shopping-lists)
                                                    common-ingredients-list)))
                  shopping-list-buffer))))
-    (display-buffer "*Shopping lists*")))
+    (display-buffer "*Shopping*")))
 
+(setq shopping-index-card-template-file (concat (file-name-directory load-file-name)
+                                                "index_cards.latex.pandoc.template"))
+
+(defun shopping-list-to-pdf ()
+  "Save current buffer to pdf as A6 index cards."
+  (interactive)
+  (let* ((output-file (read-from-minibuffer "Output pdf file? "))
+         (pandoc-command (format "pandoc --template %s -o %s"
+                                 shopping-index-card-template-file output-file)))
+    (shell-command-on-region (point-min) (point-max) pandoc-command)))
