@@ -1,3 +1,8 @@
+- Should change the font mechanism for PDF so that it can be specified
+  by the user by setting shopping-font in their config file. This can
+  be passed to pandoc directly via 'mainfont'. User should not have to
+  edit the template.
+
 - Change the internal shopping list representation so that if you add
   a substitutable ingredient it goes into a separate list of
   substitutable things, rather than generating N new shopping
