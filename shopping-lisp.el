@@ -458,7 +458,7 @@ ingredients in the given category.
       (setq output-string (format "%s\n- %s" output-string (car category)))
       (dolist (ingredient (cdr category))
         (setq output-string
-              (format "%s\n    + %s"
+              (format "%s\n    - ☐ %s"
                       output-string
                       (shopping-shopping-list-entry-to-string ingredient)))))
     output-string))
@@ -609,7 +609,7 @@ and print it to *Shopping* buffer in Pandoc Markdown format."
            shopping-list-buffer)
     (if (> (length shopping-lists) 1)
         (progn
-        (princ (format "\n## You must choose one of these lists and get everything\n")
+        (princ (format "\n## Choose only one of these\n")
                shopping-list-buffer)
         (dotimes (i (length shopping-lists))
           (princ (format "\n### Option %i\n%s\n"
@@ -627,6 +627,6 @@ and print it to *Shopping* buffer in Pandoc Markdown format."
   "Save current buffer to pdf as A6 index cards."
   (interactive)
   (let* ((output-file (read-from-minibuffer "Output pdf file? "))
-         (pandoc-command (format "pandoc --template %s -o %s"
+         (pandoc-command (format "pandoc --latex-engine xelatex --template %s -o %s"
                                  shopping-index-card-template-file output-file)))
     (shell-command-on-region (point-min) (point-max) pandoc-command)))
