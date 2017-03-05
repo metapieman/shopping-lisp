@@ -92,6 +92,10 @@ $endif$
   \usepackage[unicode=true]{hyperref}
 \fi
 
+% TO CHANGE THE FONT, UNCOMMENT THIS AND SET TO THE ONE YOU WANT.
+%
+% ON LINUX, RUN 'fc-list : family' TO GET A LIST OF AVAILABLE FONTS.
+%\setmainfont{FreeSerif}
 \usepackage[a6paper, landscape, margin=0.35cm]{geometry}
 \renewcommand{\baselinestretch}{0.5}
 
