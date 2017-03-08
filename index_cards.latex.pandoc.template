@@ -95,8 +95,8 @@ $endif$
 % TO CHANGE THE FONT, UNCOMMENT THIS AND SET TO THE ONE YOU WANT.
 %
 % ON LINUX, RUN 'fc-list : family' TO GET A LIST OF AVAILABLE FONTS.
-%\setmainfont{FreeSerif}
-\usepackage[a6paper, landscape, margin=0.35cm]{geometry}
+\setmainfont{FreeSerif}
+\usepackage[margin=0.65cm, paperwidth=6in, paperheight=4in]{geometry}
 \renewcommand{\baselinestretch}{0.5}
 
 \hypersetup{breaklinks=true,
