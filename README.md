@@ -64,6 +64,8 @@ From this buffer, it is easy to create a PDF by doing:
 
 <code>M-x shopping-list-to-pdf</code>
 
+*NB: For this to work, you must have Pandoc and Latex installed.*
+
 By default, the PDF will be 6 inches wide and 4 inches high. It is easy to buy index cards of this size.
 
 To tweak the look of the PDF, you can edit the Pandoc latex template in the repo (<code>index_cards.latex.pandoc.template</code>), but of course this requires some familiarity with Pandoc and Latex. 
