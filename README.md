@@ -1,7 +1,5 @@
-shopping-lisp
-=============
-
-Emacs package to create shopping lists from recipes.
+shopping-lisp: an Emacs package to create shopping lists from recipes
+=====================================================================
 
 This aim of this package is to make grocery shopping easy. You
 select which recipes to make, and a shopping list is created with the
@@ -10,7 +8,8 @@ etc.). It is easy to add recipes and ingredient categories.
 
 The final shopping list is in Pandoc Markdown format, so it can easily
 be converted to many other formats such as PDF or HTML, although it is
-perfectly readable as-is.
+perfectly readable as-is. A helper function is provided to save to PDF,
+to make it easy to print out a nice looking shopping list.
 
 Recipes are quite flexible: ingredients can be input with a quantity:
 
@@ -59,3 +58,12 @@ ingredient-information.el).
 Once installed, prepare your shopping list by doing:
 
 <code>M-x shopping-prepare-list</code>
+
+This will display the shopping list in a buffer called <code>\*Shopping\*</code>.
+From this buffer, it is easy to create a PDF by doing:
+
+<code>M-x shopping-list-to-pdf</code>
+
+By default, the PDF will be 6 inches wide and 4 inches high. It is easy to buy index cards of this size.
+
+To tweak the look of the PDF, you can edit the Pandoc latex template in the repo (<code>index_cards.latex.pandoc.template</code>), but of course this requires some familiarity with Pandoc and Latex. 
