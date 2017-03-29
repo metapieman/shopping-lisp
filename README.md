@@ -42,11 +42,11 @@ shopping-recipe-file and shopping-ingredient-file. For example, put
 the following in your <code>.emacs</code> file:
 
 <code>
-(setq shopping-recipe-file "/home/johnsmith/recipes.el")
+(setq shopping-recipe-file "~/recipes.el")
 </code>
 
 <code>
-(setq shopping-ingredient-file "/home/johnsmith/ingredient-information.el")
+(setq shopping-ingredient-file "~/ingredient-information.el")
 </code>
 
 Examples of both files are provided with the package.
