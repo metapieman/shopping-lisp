@@ -6,10 +6,7 @@ select which recipes to make, and a shopping list is created with the
 ingredients nicely sorted into categories (vegetables, fruit, grains,
 etc.). It is easy to add recipes and ingredient categories.
 
-The final shopping list is in Pandoc Markdown format, so it can easily
-be converted to many other formats such as PDF or HTML, although it is
-perfectly readable as-is. A helper function is provided to save to PDF,
-to make it easy to print out a nice looking shopping list.
+The final shopping list is in Pandoc Markdown format, allowing easy conversion to many other formats (PDF, HTML, etc.), assuming you have Pandoc installed. A function is also provided which creates a PDF of the shopping list, in a format suitable for printing on standard index cards.
 
 Recipes are quite flexible: ingredients can be input with a quantity:
 
@@ -30,19 +27,19 @@ It is also possible to specify ingredient alternatives. For example, *either* 1 
 
 <code>(("Red chillis" 1) ("Green chillis" 1))</code>.
 
-Installation and usage
-======================
+Installation
+============
 
 To install, put shopping-list.el somewhere Emacs can see it (i.e., in
 one of the directories specified in the load-path variable), and put
-the following in your .emacs file:
+the following in your <code>.emacs</code> file:
 
 <code>(load "shopping-lisp.el")</code>
 
 In addition, you must tell shopping-lisp where to find the recipe
 file and the ingredient information file, by setting the variables
 shopping-recipe-file and shopping-ingredient-file. For example, put
-the following in your .emacs:
+the following in your <code>.emacs</code> file:
 
 <code>
 (setq shopping-recipe-file "/home/johnsmith/recipes.el")
@@ -52,15 +49,17 @@ the following in your .emacs:
 (setq shopping-ingredient-file "/home/johnsmith/ingredient-information.el")
 </code>
 
-Examples of both files are provided with the package (recipes.el,
-ingredient-information.el).
+Examples of both files are provided with the package.
 
-Once installed, prepare your shopping list by doing:
+Usage
+=====
+
+Prepare your shopping list by doing:
 
 <code>M-x shopping-prepare-list</code>
 
 This will display the shopping list in a buffer called <code>\*Shopping\*</code>.
-From this buffer, it is easy to create a PDF by doing:
+From this buffer, it is easy to create a PDF by doing
 
 <code>M-x shopping-list-to-pdf</code>
 
