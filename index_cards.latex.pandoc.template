@@ -141,6 +141,9 @@ $for(header-includes)$
 $header-includes$
 $endfor$
 
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
 $if(title)$
 \title{$title$}
 $endif$
