@@ -8,15 +8,15 @@ etc.). It is easy to add recipes and ingredient categories.
 
 The final shopping list is in Pandoc Markdown format, allowing easy conversion to many other formats (PDF, HTML, etc.), assuming you have Pandoc installed. A function is also provided which creates a PDF of the shopping list, in a format suitable for printing on standard index cards.
 
-Recipes are quite flexible: ingredients can be input with a quantity:
+Recipes are quite flexible. Ingredients can be specified with a quantity
 
 <code>("Olive oil" 100 ml)</code>,
 
-a count:
+a count
 
 <code>("Bay leaves" 2)</code>,
 
-or neither:
+or neither
 
 <code>("Flour")</code>.
 
