@@ -576,7 +576,6 @@ to shopping-add-ingredient-to-shopping-list."
 
 (defun shopping-lisp-selection ()
   "Create the widgets from the Widget manual."
-  (interactive)
   (switch-to-buffer "*Recipe selection menu*")
   (kill-all-local-variables)
   (make-local-variable 'widget-example-repeat)
