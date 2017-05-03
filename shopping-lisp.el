@@ -285,10 +285,8 @@ copied).
   " Add an ingredient to the given shopping list. Note that
 shopping-list is altered by this function.
 
-shopping list is a symbol pointing to an alist from ingredient
-name to quantity information. Note: the symbol must be
-quoted (see example below). This should probably be changed, it
-doesn't feel right.
+shopping list is an alist from ingredient
+name to quantity information.
 
 ingredient-info is a list of the form (name quantity unit),
 or (name quantity), or (name), i.e., an element from
@@ -301,9 +299,9 @@ changed?).
 
 Example:
   (setq my-shopping '())
-  (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Unsalted butter\" 50 g))
-  (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Unsalted butter\" 100 g))
-  (shopping-add-ingredient-to-shopping-list 'my-shopping '(\"Cashew nuts\"))
+  (shopping-add-ingredient-to-shopping-list my-shopping '(\"Unsalted butter\" 50 g))
+  (shopping-add-ingredient-to-shopping-list my-shopping '(\"Unsalted butter\" 100 g))
+  (shopping-add-ingredient-to-shopping-list my-shopping '(\"Cashew nuts\"))
 
     --> ((\"Cashew nuts\" t 0 nil) (\"Unsalted butter\" nil 0 ((* (float 15 1) (var g var-g)))))
 
@@ -330,14 +328,10 @@ ingredients, returns n new shopping lists, one for each
 variation. Does not modify input lists. All the returned lists
 use copies of the original shopping-list, produced by copy-tree.
 
-Note that shopping-list input must be a quoted symbol (see
-example below). As for shopping-add-ingredient-to-shopping-list,
-this doesn't feel right and should probably be changed.
-
 Example:
 
   (setq my-shopping '((\"Cashew nuts\" t 0 nil)))
-  (shopping-add-substitutable-ingredients-to-shopping-list 'my-shopping
+  (shopping-add-substitutable-ingredients-to-shopping-list my-shopping
       '((\"Black pepper\") (\"Red pepper\")))
 
    --> (((\"Red pepper\" t 0 nil) (\"Cashew nuts\" t 0 nil))
@@ -348,10 +342,10 @@ Example:
         for i from 0
         while (< i (length substitutable-ingredient-list))
         do
-        (let ((branched-list (copy-tree (eval shopping-list)))
+        (let ((branched-list (copy-tree shopping-list))
               (ingredient-info (nth i substitutable-ingredient-list)))
           (progn
-            (shopping-add-ingredient-to-shopping-list 'branched-list ingredient-info)
+            (setq branched-list (shopping-add-ingredient-to-shopping-list branched-list ingredient-info))
             (add-to-list 'result branched-list)))
         finally
         return result))
@@ -388,7 +382,7 @@ instead."
                       do
                       (setq branched-results (append branched-results
                        (shopping-add-substitutable-ingredients-to-shopping-list
-                        '(nth j results)
+                        (nth j results)
                         ingredient-info)))
                       finally
                       (setq results branched-results)))))
@@ -594,25 +588,27 @@ to shopping-add-ingredient-to-shopping-list."
   (let ((shopping-lisp-count-widgets
          (make-vector (length shopping-recipes) '())))
     (dotimes (i (length shopping-recipes))
-      (widget-create 'push-button
-                     :notify (lambda (&rest ignore)
-                               (let* ((count (aref shopping-lisp-recipe-counts i))
-                                      (newcount (+ count 1)))
-                                 (aset shopping-lisp-recipe-counts i newcount)
-                                 (widget-value-set
-                                  (aref shopping-lisp-count-widgets i) newcount)))
-                     "+")
+      (widget-create
+       'push-button
+       :notify (lambda (&rest ignore)
+                 (let* ((count (aref shopping-lisp-recipe-counts i))
+                        (newcount (+ count 1)))
+                   (aset shopping-lisp-recipe-counts i newcount)
+                   (widget-value-set
+                    (aref shopping-lisp-count-widgets i) newcount)))
+       "+")
       (widget-insert " ")
-      (widget-create 'push-button
-                     :notify (lambda (&rest ignore)
-                               (let* ((count (aref shopping-lisp-recipe-counts i))
-                                      (newcount (- count 1)))
-                                 (message (format "count: %i" count))
-                                 (if (> count 0)
-                                     (progn (aset shopping-lisp-recipe-counts i newcount)
-                                            (widget-value-set
-                                             (aref shopping-lisp-count-widgets i) newcount)))))
-                     "-")
+      (widget-create
+       'push-button
+       :notify (lambda (&rest ignore)
+                 (let* ((count (aref shopping-lisp-recipe-counts i))
+                        (newcount (- count 1)))
+                   (message (format "count: %i" count))
+                   (if (> count 0)
+                       (progn (aset shopping-lisp-recipe-counts i newcount)
+                              (widget-value-set
+                               (aref shopping-lisp-count-widgets i) newcount)))))
+       "-")
       (aset shopping-lisp-count-widgets i (widget-create 'const :format " %v " 0))
       (widget-insert (format "%s\n" (getf (nth i shopping-recipes) :title)))
       )
@@ -622,11 +618,9 @@ to shopping-add-ingredient-to-shopping-list."
                                             (kill-buffer "*Recipe selection menu*")
                                             (shopping-make-list)))
                    "Create shopping list")
-    (use-local-map widget-keymap)  ; So that, e.g., the enter key presses buttons
+    (use-local-map widget-keymap) ; So that, e.g., the enter key presses buttons
     (widget-setup))
   )
-
-;(shopping-lisp-selection)
 
 (defun shopping-make-list ()
   "Using the global variable shopping-lisp-recipe-counts, which
@@ -639,37 +633,22 @@ to shopping-add-ingredient-to-shopping-list."
                               shopping-lists
                               (nth i shopping-recipes)))
         ))
-    shopping-lists))
+    (shopping-display-lists shopping-lists)))
 
-;(shopping-make-list)
-
-(defun shopping-prepare-list ()
-  "Prompt user for recipe choices, calculate shopping list(s),
-and print it to *Shopping* buffer in Pandoc Markdown format."
-  (interactive)
-  (shopping-reload-data)
-  (let ((recipe-buffer (get-buffer-create "*Recipes*"))
-        (shopping-lists '(())))
-    (set-buffer recipe-buffer)
-    (erase-buffer)
-    (display-buffer recipe-buffer)
-    (princ "--- List of recipes ---\n\n" recipe-buffer)
-    (dotimes (i (length shopping-recipes))
-      (princ (format "%i %s\n" i (getf (nth i shopping-recipes) :title))
-             recipe-buffer))
-    (setq recipe-numbers (shopping-get-digits-from-user))
-    (dolist (n recipe-numbers)
-      (setq shopping-lists
-            (shopping-add-recipe-to-shopping-lists shopping-lists
-                                                   (nth n shopping-recipes))))
-    (setq common-ingredients-list (shopping-list-intersection shopping-lists))
-    (setq shopping-list-buffer (get-buffer-create "*Shopping*"))
+(defun shopping-display-lists (shopping-lists)
+  "Create a new buffer and print out recipes, common ingredients
+  and optional ingredients from the given shopping-lists
+  variable."
+  (let* ((common-ingredients-list (shopping-list-intersection shopping-lists))
+         (shopping-list-buffer (get-buffer-create "*Shopping*")))
     (set-buffer shopping-list-buffer)
     (erase-buffer)
     (princ "# Recipes\n\n" shopping-list-buffer)
-    (dolist (n recipe-numbers)
-      (princ (format "- %s\n"(getf (nth n shopping-recipes) :title))
-             shopping-list-buffer))
+    (dotimes (i (length shopping-recipes))
+      (if (> (aref shopping-lisp-recipe-counts i) 0)
+          (princ (format "%s\n" (getf (nth i shopping-recipes) :title))
+                 shopping-list-buffer))
+      )
     (princ (format "\n# Ingredients\n\n## You must get these\n%s\n"
                    (shopping-pprint-shopping-list-by-category
                     common-ingredients-list))
@@ -685,15 +664,27 @@ and print it to *Shopping* buffer in Pandoc Markdown format."
                           (shopping-subtract-lists (nth i shopping-lists)
                                                    common-ingredients-list)))
                  shopping-list-buffer))))
-    (display-buffer "*Shopping*")))
+    (display-buffer "*Shopping*")
+    )
+  )
 
-(setq shopping-index-card-template-file (concat (file-name-directory load-file-name)
-                                                "index_cards.latex.pandoc.template"))
+(defun shopping-prepare-list ()
+  "Prompt user for recipe choices, calculate shopping list(s),
+and print it to *Shopping* buffer in Pandoc Markdown format."
+  (interactive)
+  (shopping-reload-data)
+  (shopping-lisp-selection)
+)
+
+(setq shopping-index-card-template-file
+      (concat (file-name-directory load-file-name)
+              "index_cards.latex.pandoc.template"))
 
 (defun shopping-list-to-pdf ()
   "Save current buffer to pdf as A6 index cards."
   (interactive)
   (let* ((output-file (read-from-minibuffer "Output pdf file? "))
-         (pandoc-command (format "pandoc --latex-engine xelatex --template %s -o %s"
-                                 shopping-index-card-template-file output-file)))
+         (pandoc-command
+          (format "pandoc --latex-engine xelatex --template %s -o %s"
+                  shopping-index-card-template-file output-file)))
     (shell-command-on-region (point-min) (point-max) pandoc-command)))
