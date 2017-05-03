@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t -*-
+
 ;;; shopping-lisp.el --- create shopping lists within Emacs by selecting recipes
 
 ;; Copyright (C) 2013 Simon West
@@ -24,6 +26,8 @@
 ;; for its results.
 
 (require 'calc-ext)
+(require 'widget)
+(eval-when-compile (require 'wid-edit))
 
 (defun shopping-to-calc (shopping-sexp)
   "Convert a shopping-lisp format quantity, e.g., (1.0 kg), to a
@@ -312,12 +316,12 @@ which can be verified by evaluating '(1 . (2 3 4))
           (shopping-quantity-to-composite
            (shopping-get-quantity-from-ingredient-expr ingredient-info)))
          (ingredient (first ingredient-info))
-         (item (assoc ingredient (eval shopping-list))))
+         (item (assoc ingredient shopping-list)))
     (if (eq item nil)
-        (add-to-list shopping-list `(,ingredient . ,sl-quantity))
+        (push `(,ingredient . ,sl-quantity) shopping-list)
       (progn
         (setf (cdr item) (shopping-add-composite-quantities (cdr item) sl-quantity))
-        (eval shopping-list)))))
+        shopping-list))))
 
 (defun shopping-add-substitutable-ingredients-to-shopping-list
   (shopping-list substitutable-ingredient-list)
@@ -372,7 +376,7 @@ instead."
                 (setq results
                       (mapcar (lambda (sl)
                                 (shopping-add-ingredient-to-shopping-list
-                                 'sl ingredient-info))
+                                 sl ingredient-info))
                         results))
               (let ((branched-results '())) ; the else clause for
                                             ; above if, so
@@ -575,6 +579,69 @@ to shopping-add-ingredient-to-shopping-list."
               (if ii
                   (setq intersection
                         (append intersection (list ii)))))))))))
+
+(defun shopping-lisp-selection ()
+  "Create the widgets from the Widget manual."
+  (interactive)
+  (switch-to-buffer "*Recipe selection menu*")
+  (kill-all-local-variables)
+  (make-local-variable 'widget-example-repeat)
+  (let ((inhibit-read-only t))
+    (erase-buffer))
+  (remove-overlays)
+  (setq shopping-lisp-recipe-counts
+        (make-vector (length shopping-recipes) 0))
+  (let ((shopping-lisp-count-widgets
+         (make-vector (length shopping-recipes) '())))
+    (dotimes (i (length shopping-recipes))
+      (widget-create 'push-button
+                     :notify (lambda (&rest ignore)
+                               (let* ((count (aref shopping-lisp-recipe-counts i))
+                                      (newcount (+ count 1)))
+                                 (aset shopping-lisp-recipe-counts i newcount)
+                                 (widget-value-set
+                                  (aref shopping-lisp-count-widgets i) newcount)))
+                     "+")
+      (widget-insert " ")
+      (widget-create 'push-button
+                     :notify (lambda (&rest ignore)
+                               (let* ((count (aref shopping-lisp-recipe-counts i))
+                                      (newcount (- count 1)))
+                                 (message (format "count: %i" count))
+                                 (if (> count 0)
+                                     (progn (aset shopping-lisp-recipe-counts i newcount)
+                                            (widget-value-set
+                                             (aref shopping-lisp-count-widgets i) newcount)))))
+                     "-")
+      (aset shopping-lisp-count-widgets i (widget-create 'const :format " %v " 0))
+      (widget-insert (format "%s\n" (getf (nth i shopping-recipes) :title)))
+      )
+    (widget-insert "\n")
+    (widget-create 'push-button :notify (lambda (&rest ignore)
+                                          (progn
+                                            (kill-buffer "*Recipe selection menu*")
+                                            (shopping-make-list)))
+                   "Create shopping list")
+    (use-local-map widget-keymap)  ; So that, e.g., the enter key presses buttons
+    (widget-setup))
+  )
+
+;(shopping-lisp-selection)
+
+(defun shopping-make-list ()
+  "Using the global variable shopping-lisp-recipe-counts, which
+  contains a count for each recipe, create a shopping list to
+  *Shopping* buffer."
+  (let ((shopping-lists '(())))
+    (dotimes (i (length shopping-recipes))
+      (dotimes (j (aref shopping-lisp-recipe-counts i))
+        (setq shopping-lists (shopping-add-recipe-to-shopping-lists
+                              shopping-lists
+                              (nth i shopping-recipes)))
+        ))
+    shopping-lists))
+
+;(shopping-make-list)
 
 (defun shopping-prepare-list ()
   "Prompt user for recipe choices, calculate shopping list(s),
