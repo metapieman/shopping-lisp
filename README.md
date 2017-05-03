@@ -58,7 +58,9 @@ Prepare your shopping list by doing:
 
 <code>M-x shopping-prepare-list</code>
 
-This will display the shopping list in a buffer called <code>\*Shopping\*</code>.
+This will pop up a buffer for recipe selection. Add/remove recipes using the +/- widgets. A count is displayed with each recipe for the number of times it has been added. For instance, if you add a recipe twice, the final ingredients list will include enough ingredients to make the recipe twice.
+
+Once all desired recipes have been added, press the button 'Create shopping list'. This will display the shopping list in a buffer called <code>\*Shopping\*</code>.
 From this buffer, it is easy to create a PDF by doing
 
 <code>M-x shopping-list-to-pdf</code>
