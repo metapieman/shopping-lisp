@@ -645,7 +645,7 @@ to shopping-add-ingredient-to-shopping-list."
     (princ "# Recipes\n\n" shopping-list-buffer)
     (dotimes (i (length shopping-recipes))
       (if (> (aref shopping-lisp-recipe-counts i) 0)
-          (princ (format "%s\n" (getf (nth i shopping-recipes) :title))
+          (princ (format "- %s\n" (getf (nth i shopping-recipes) :title))
                  shopping-list-buffer))
       )
     (princ (format "\n# Ingredients\n\n## You must get these\n%s\n"
