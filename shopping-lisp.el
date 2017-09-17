@@ -37,8 +37,8 @@ Example:
   (shopping-to-calc '(1.0 kg))
     --> (* (float 1 0) (var kg var-kg))
 "
-  (math-read-expr (format "%f %s" (float (first shopping-sexp))
-                          (symbol-name (second shopping-sexp)))))
+  (math-read-expr (format "%f %s" (float (cl-first shopping-sexp))
+                          (symbol-name (cl-second shopping-sexp)))))
 
 (defun try-sum-unitful (q1 q2)
 "Use math-simplify-units to try and sum two unitful quantities. If
@@ -57,13 +57,13 @@ Example:
 
 (defun unitful-geq-zero (q)
   "determine if a unitful quantity is >=0."
-  (if (eq (first q) '*)
-      (>= (second (second q)) 0) 't))
+  (if (eq (cl-first q) '*)
+      (>= (cl-second (cl-second q)) 0) 't))
 
 (defun unitful-eq-zero (q)
   "determine if a unitful quantity is zero."
-  (if (eq (first q) '*)
-      (= (second (second q)) 0) 't))
+  (if (eq (cl-first q) '*)
+      (= (cl-second (cl-second q)) 0) 't))
 
 (defun try-min-unitful (q1 q2)
   "Find the minimum of two unitful quantities. Returns nil if the
@@ -117,7 +117,7 @@ two unique dimensions in the input list (mass and volume).
                                         ; includes the summed quantity
                                         ; and return it
             (progn
-              (setf (nth (position-if (lambda (x) (not (equal x nil))) all-sums)
+              (setf (nth (cl-position-if (lambda (x) (not (equal x nil))) all-sums)
                          sum-of-remainder)
                     (car all-sums-dedup))
               sum-of-remainder)))))))
@@ -148,15 +148,15 @@ E.g., (750 g) would return true, but (3) would return nil, and
 nil would return nil (recall that nil is a valid quantity -- it
 indicates that no quantity was specified)."
   (and (= 2 (length quantity))
-       (numberp (first quantity))
-       (symbolp (second quantity))))
+       (numberp (cl-first quantity))
+       (symbolp (cl-second quantity))))
 
 (defun shopping-is-unitless-quantity (quantity)
   "Test whether a quantity appearing in the :ingredients list in
 a recipe is unitless but not nil. E.g., (750 g) would return
 false, (3) would return true, nil would return false."
   (and (= 1 (length quantity))
-       (numberp (first quantity))))
+       (numberp (cl-first quantity))))
 
 (defun shopping-is-unspecified-quantity (quantity)
   "Test whether a quantity appearing in the :ingredients list in
@@ -183,9 +183,9 @@ Example 2:
  (shopping-add-composite-quantities q1 q2)
    --> (nil 0 ((* (float 5 1) (var g var-g)) ((* (float 1 1) (var ml var-ml)))))
 "
-  (list (or (first quantity1) (first quantity2))
-        (+ (second quantity1) (second quantity2))
-        (shopping-sum-quantities (append (third quantity1) (third quantity2)))))
+  (list (or (cl-first quantity1) (cl-first quantity2))
+        (+ (cl-second quantity1) (cl-second quantity2))
+        (shopping-sum-quantities (append (cl-third quantity1) (cl-third quantity2)))))
 
 
 (defun shopping-diff-quantities (q1 q2)
@@ -209,7 +209,7 @@ Example 2:
   (let ((q2-length (length q2)))
     (if (= 0 q2-length) (copy-tree q1)
       (if (= 1 q2-length)
-          (let* ((qty-to-remove (first q2))
+          (let* ((qty-to-remove (cl-first q2))
                  (new-list '()))
             (dolist (qty q1 new-list)
               (let* ((difference (math-simplify-units (list '- qty qty-to-remove))))
@@ -226,19 +226,19 @@ Example 2:
   "Remove composite quantity q2 from quantity q1. If quantity q2
 is not contained in q1, raise error."
   (progn
-    (if (and (not (first q1)) (first q2))
+    (if (and (not (cl-first q1)) (cl-first q2))
         (error "removal of q2 from q1 failed because q2 has an
 indefinite amount but q1 does not"))
-    (if (< (second q1) (second q2))
+    (if (< (cl-second q1) (cl-second q2))
         (error "removal of q2 from q1 failed because there are more units in q2"))
-    (list (int-to-logical (logxor (logical-to-int (first q1)) (logical-to-int (first q2))))
-          (- (second q1) (second q2))
-          (shopping-diff-quantities (third q1) (third q2)))))
+    (list (int-to-logical (logxor (logical-to-int (cl-first q1)) (logical-to-int (cl-first q2))))
+          (- (cl-second q1) (cl-second q2))
+          (shopping-diff-quantities (cl-third q1) (cl-third q2)))))
 
 (defun composite-quantity-is-zero (q)
-     (and (not (first q)) (= 0 (second q))
-          (if (eq (third q) nil) t
-            (every 'unitful-eq-zero (third q)))))
+     (and (not (cl-first q)) (= 0 (cl-second q))
+          (if (eq (cl-third q) nil) t
+            (every 'unitful-eq-zero (cl-third q)))))
 
 (defun shopping-subtract-lists (l1 l2)
   "Subtract shopping list 2 from shopping list 1. If list 2 is
@@ -278,7 +278,7 @@ become part of the output list (i.e., the input list is not
 copied).
 "
   (cond ((shopping-is-unspecified-quantity quantity) '(t 0 ()))
-        ((shopping-is-unitless-quantity quantity) `(nil ,(first quantity) ()))
+        ((shopping-is-unitless-quantity quantity) `(nil ,(cl-first quantity) ()))
         ((shopping-is-unitful-quantity quantity) `(nil 0 ,(list (shopping-to-calc quantity))))))
 
 (defun shopping-add-ingredient-to-shopping-list (shopping-list ingredient-info)
@@ -313,7 +313,7 @@ which can be verified by evaluating '(1 . (2 3 4))
   (let* ((sl-quantity
           (shopping-quantity-to-composite
            (shopping-get-quantity-from-ingredient-expr ingredient-info)))
-         (ingredient (first ingredient-info))
+         (ingredient (cl-first ingredient-info))
          (item (assoc ingredient shopping-list)))
     (if (eq item nil)
         (push `(,ingredient . ,sl-quantity) shopping-list)
@@ -338,7 +338,7 @@ Example:
         ((\"Black pepper\" t 0 nil) (\"Cashew nuts\" t 0 nil)))
 
 "
-  (loop with result = '()
+  (cl-loop with result = '()
         for i from 0
         while (< i (length substitutable-ingredient-list))
         do
@@ -356,13 +356,13 @@ because whenever there's an 'or' ingredient, a shopping list
 branches into two or more lists. This function does not modify
 the input lists, it creates deep copies and returns those
 instead."
-  (let ((ingredients (getf recipe ':ingredients)))
-    (loop with results = (copy-tree shopping-lists)
+  (let ((ingredients (cl-getf recipe ':ingredients)))
+    (cl-loop with results = (copy-tree shopping-lists)
           for i from 0
           while (< i (length ingredients))
           do
           (let ((ingredient-info (nth i ingredients)))
-            (if (stringp (first ingredient-info)) ; a single
+            (if (stringp (cl-first ingredient-info)) ; a single
                                                   ; ingredient rather
                                                   ; than a list of
                                                   ; substitutable
@@ -377,7 +377,7 @@ instead."
                                             ; ingredient-info is a
                                             ; list of substitutable
                                             ; ingredients
-                (loop for j from 0
+                (cl-loop for j from 0
                       while (< j (length results))
                       do
                       (setq branched-results (append branched-results
@@ -408,29 +408,29 @@ Example:
 
     --> \"150. g Unsalted butter\"
 "
-  (let* ((ingredient (first entry))
+  (let* ((ingredient (cl-first entry))
          (output-strings '()))
     (progn
-      (if (second entry)
+      (if (cl-second entry)
           (add-to-list 'output-strings ingredient))
-      (setq n-items (third entry))
+      (setq n-items (cl-third entry))
       (if (> n-items 0)
           (if (integerp n-items)
           (add-to-list 'output-strings
                        (format "%i %s" n-items ingredient))
         (add-to-list 'output-strings
                        (format "%1.1f %s" n-items ingredient))))
-      (if (not (eq nil (fourth entry)))
+      (if (not (eq nil (cl-fourth entry)))
           (setq output-strings
                 (append output-strings
                         (mapcar (lambda (q) (format "%s %s"
                                                     (math-format-value q)
                                                     ingredient))
-                         (fourth entry)))))
+                         (cl-fourth entry)))))
       (mapconcat 'identity output-strings ", "))))
 
 (defun shopping-get-ingredient-category (ingredient)
-  (getf (lax-plist-get shopping-ingredients ingredient) :class))
+  (cl-getf (lax-plist-get shopping-ingredients ingredient) :class))
 
 (defun shopping-shopping-list-by-category (shopping-list)
 " Takes a shopping list and returns an association list whose
@@ -439,7 +439,7 @@ ingredients in the given category.
 "
   (let ((shopping-alist '()))
     (dolist (ingredient-info shopping-list)
-      (let* ((ingredient (first ingredient-info))
+      (let* ((ingredient (cl-first ingredient-info))
              (category (shopping-get-ingredient-category ingredient)))
         (if (eq nil category)
             (error "Error: no ingredient information for %s" ingredient))
@@ -477,7 +477,7 @@ ingredients in the given category.
   "Destructively sort a shopping list by ingredient name."
   (sort shopping-list
         (lambda (ing1 ing2)
-          (string< (first ing1) (first ing2)))))
+          (string< (cl-first ing1) (cl-first ing2)))))
 
 (defun quantity-intersection-unspecified (q1 q2)
      "Intersection of two unspecified quantities, each of which
@@ -527,10 +527,10 @@ Example 2 (in which there's no sensible intersection):
 "
   (if (string= (car ing1) (car ing2))
       (let ((intersection
-             (list (quantity-intersection-unspecified (second ing1) (second ing2))
-                   (quantity-intersection-unitless    (third  ing1) (third  ing2))
-                   (quantity-intersection-unitful     (fourth ing1) (fourth ing2)))))
-        (if (and (not (first intersection)) (= 0 (second intersection)) (not (third intersection)))
+             (list (quantity-intersection-unspecified (cl-second ing1) (cl-second ing2))
+                   (quantity-intersection-unitless    (cl-third  ing1) (cl-third  ing2))
+                   (quantity-intersection-unitful     (cl-fourth ing1) (cl-fourth ing2)))))
+        (if (and (not (cl-first intersection)) (= 0 (cl-second intersection)) (not (cl-third intersection)))
             nil
             (append (list (car ing1)) intersection)))))
 
@@ -560,15 +560,15 @@ Example 2 (in which there's no sensible intersection):
 shopping lists. A shopping list is a list constructed with calls
 to shopping-add-ingredient-to-shopping-list."
   (if (= (length list-of-lists) 1)
-      (copy-tree (first list-of-lists))
+      (copy-tree (cl-first list-of-lists))
     (if (> (length list-of-lists) 2)
         (shopping-list-intersection
-         (append (list (first list-of-lists))
+         (append (list (cl-first list-of-lists))
                  (list (shopping-list-intersection (cdr list-of-lists)))))
       ;; if we're here, then list-of-lists has length 2
       (let ((intersection '()))
-        (dolist (e1 (first list-of-lists) intersection)
-          (dolist (e2 (second list-of-lists))
+        (dolist (e1 (cl-first list-of-lists) intersection)
+          (dolist (e2 (cl-second list-of-lists))
             (let ((ii (ingredient-intersection e1 e2)))
               (if ii
                   (setq intersection
@@ -609,7 +609,7 @@ to shopping-add-ingredient-to-shopping-list."
                                (aref shopping-lisp-count-widgets i) newcount)))))
        "-")
       (aset shopping-lisp-count-widgets i (widget-create 'const :format " %v " 0))
-      (widget-insert (format "%s\n" (getf (nth i shopping-recipes) :title)))
+      (widget-insert (format "%s\n" (cl-getf (nth i shopping-recipes) :title)))
       )
     (widget-insert "\n")
     (widget-create 'push-button :notify (lambda (&rest ignore)
@@ -645,7 +645,7 @@ to shopping-add-ingredient-to-shopping-list."
     (princ "# Recipes\n\n" shopping-list-buffer)
     (dotimes (i (length shopping-recipes))
       (if (> (aref shopping-lisp-recipe-counts i) 0)
-          (princ (format "- %s\n" (getf (nth i shopping-recipes) :title))
+          (princ (format "- %s\n" (cl-getf (nth i shopping-recipes) :title))
                  shopping-list-buffer))
       )
     (princ (format "\n# Ingredients\n\n## You must get these\n%s\n"
