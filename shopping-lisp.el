@@ -40,8 +40,19 @@ Example:
   (math-read-expr (format "%f %s" (float (cl-first shopping-sexp))
                           (symbol-name (cl-second shopping-sexp)))))
 
+(defun shopping-math-simplify-units (quantity)
+  "A wrapper around math-simplify-units such that
+if (math-simplify-units quantity) evaluates to 0, we
+return (float 0 0) for consistency."
+  (let ((simplified (math-simplify-units quantity)))
+    (if (numberp simplified)
+        (if (= 0 simplified)
+            '(float 0 0)
+          (error "Should not get here"))
+      simplified)))
+
 (defun try-sum-unitful (q1 q2)
-"Use math-simplify-units to try and sum two unitful quantities. If
+"Use shopping-math-simplify-units to try and sum two unitful quantities. If
   their dimensions are different, return nil.
 
 Example:
@@ -51,7 +62,7 @@ Example:
   (try-sum-unitful (shopping-to-calc '(10 kg)) (shopping-to-calc '(5 l)))
     --> nil
 "
-(let ((sum-of-quantities (math-simplify-units (list '+ q1 q2))))
+(let ((sum-of-quantities (shopping-math-simplify-units (list '+ q1 q2))))
   (if (eq (car sum-of-quantities) '+) nil
     sum-of-quantities)))
 
@@ -68,14 +79,10 @@ Example:
 (defun try-min-unitful (q1 q2)
   "Find the minimum of two unitful quantities. Returns nil if the
 units are different."
-  (let ((difference (math-simplify-units (list '- q1 q2))))
-    (if (eq (car difference) '-) nil
-        ; if q1 and q2 are equal then the difference is (float 0
-        ; 0). In this case, just return one of them.
-      (if (eq (car difference) 'float) q1
-        (if (unitful-geq-zero difference)
-            q2
-          q1)))))
+  (let ((difference (shopping-math-simplify-units (list '- q1 q2))))
+    (if (eq (car difference) 'float) q1
+      (if (eq (car difference) '-) nil
+        (if (unitful-geq-zero difference) q2 q1)))))
 
 (defun shopping-sum-quantities (quantity-list)
   " Sum up a list of calc-format unitful quantities.
@@ -212,7 +219,7 @@ Example 2:
           (let* ((qty-to-remove (cl-first q2))
                  (new-list '()))
             (dolist (qty q1 new-list)
-              (let* ((difference (math-simplify-units (list '- qty qty-to-remove))))
+              (let* ((difference (shopping-math-simplify-units (list '- qty qty-to-remove))))
                 (if (eq (car difference) '-)
                     (setq new-list (append (list qty) new-list))
                   (setq new-list (append (list difference) new-list))))))
@@ -493,11 +500,11 @@ ingredients in the given category.
      "Intersection of two unitful quantity lists."
      (let ((intersection '()))
        (dolist (e1 l1 intersection)
-               (dolist (e2 l2)
-                       (let ((element-intersection (try-min-unitful e1 e2)))
-                         (if element-intersection
-                             (setq intersection
-                                   (append intersection (list element-intersection)))))))))
+         (dolist (e2 l2)
+           (let ((element-intersection (try-min-unitful e1 e2)))
+             (if element-intersection
+                 (setq intersection
+                       (append intersection (list element-intersection)))))))))
 
 (defun ingredient-intersection (ing1 ing2)
   "Intersection of two ingredient quantities. Returns nil if the
