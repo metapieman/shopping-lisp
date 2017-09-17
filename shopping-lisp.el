@@ -245,7 +245,7 @@ indefinite amount but q1 does not"))
 (defun composite-quantity-is-zero (q)
      (and (not (cl-first q)) (= 0 (cl-second q))
           (if (eq (cl-third q) nil) t
-            (every 'unitful-eq-zero (cl-third q)))))
+            (cl-every 'unitful-eq-zero (cl-third q)))))
 
 (defun shopping-subtract-lists (l1 l2)
   "Subtract shopping list 2 from shopping list 1. If list 2 is
