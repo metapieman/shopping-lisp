@@ -38,12 +38,14 @@ the following in your <code>.emacs</code> file:
 
 In addition, you must tell shopping-lisp where to find the recipe
 file and the ingredient information file, by setting the variables
-shopping-recipe-file and shopping-ingredient-file. For example, put
-the following in your <code>.emacs</code> file:
+<code>shopping-recipe-file</code> and <code>shopping-ingredient-file</code>. For example, you might put
+the following in your <code>.emacs</code> file to set the recipe file:
 
 <code>
 (setq shopping-recipe-file "~/recipes.el")
 </code>
+
+Similarly, for your ingredient file:
 
 <code>
 (setq shopping-ingredient-file "~/ingredient-information.el")
