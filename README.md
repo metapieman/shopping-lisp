@@ -10,22 +10,22 @@ The final shopping list is in Pandoc Markdown format, allowing easy conversion t
 
 Recipes are quite flexible. Ingredients can be specified with a quantity
 
-```("Olive oil" 100 ml)```,
+```("Olive oil" 100 ml)```
 
 a count
 
-```("Bay leaves" 2)```,
+```("Bay leaves" 2)```
 
 or neither
 
-```("Flour")```.
+```("Flour")```
 
 See recipes.el for more examples. Many different units are
 supported, thanks to the calc package which is used under the hood.
 
 It is also possible to specify ingredient alternatives. For example, *either* 1 green chilli or 1 red chilli would be represented like this in the ingredient list:
 
-```(("Red chillis" 1) ("Green chillis" 1))```.
+```(("Red chillis" 1) ("Green chillis" 1))```
 
 Installation
 ============
@@ -62,7 +62,7 @@ Prepare your shopping list by doing:
 
 This will pop up a buffer for recipe selection. Add/remove recipes using the +/- widgets. A count is displayed with each recipe for the number of times it has been added. For instance, if you add a recipe twice, the final ingredients list will include enough ingredients to make the recipe twice.
 
-Once all desired recipes have been added, press the button 'Create shopping list'. This will display the shopping list in a buffer called `\*Shopping\*`.
+Once all desired recipes have been added, press the button 'Create shopping list'. This will display the shopping list in a buffer called `*Shopping*`.
 From this buffer, it is easy to create a PDF by doing
 
 ```M-x shopping-list-to-pdf```
