@@ -691,6 +691,6 @@ and print it to *Shopping* buffer in Pandoc Markdown format."
   (interactive)
   (let* ((output-file (read-from-minibuffer "Output pdf file? "))
          (pandoc-command
-          (format "pandoc --latex-engine xelatex --template %s -o %s"
+          (format "pandoc --pdf-engine xelatex --template %s -o %s"
                   shopping-index-card-template-file output-file)))
     (shell-command-on-region (point-min) (point-max) pandoc-command)))
