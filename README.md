@@ -2,9 +2,17 @@ shopping-lisp: an Emacs package to create shopping lists from recipes
 =====================================================================
 
 This aim of this package is to make grocery shopping easy. You
-select which recipes to make, and a shopping list is created with the
+select which recipes to make like so:
+
+![recipe selection](/create_shopping_list.png?raw=true "Recipe selection buffer")
+
+A shopping list is then created with the
 ingredients nicely sorted into categories (vegetables, fruit, grains,
-etc.). It is easy to add recipes and ingredient categories.
+etc.):
+
+![ingredients](/ingredients.png?raw=true "Ingredients buffer")
+
+It is easy to add recipes and ingredient categories.
 
 The final shopping list is in Pandoc Markdown format, allowing easy conversion to many other formats (PDF, HTML, etc.), assuming you have Pandoc installed. A function is also provided which creates a PDF of the shopping list, in a format suitable for printing on standard index cards.
 
