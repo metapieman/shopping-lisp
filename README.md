@@ -2,11 +2,11 @@ shopping-lisp: an Emacs package to create shopping lists from recipes
 =====================================================================
 
 This aim of this package is to make grocery shopping easy. You
-select which recipes to make like so:
+select which recipes to make, like so:
 
 ![recipe selection](/create_shopping_list.png?raw=true "Recipe selection buffer")
 
-A shopping list is then created with the
+A shopping list is then created, with the
 ingredients nicely sorted into categories (vegetables, fruit, grains,
 etc.):
 
@@ -68,7 +68,7 @@ Prepare your shopping list by doing:
 
 ```M-x shopping-prepare-list```
 
-This will pop up a buffer for recipe selection. Add/remove recipes using the +/- widgets. A count is displayed with each recipe for the number of times it has been added. For instance, if you add a recipe twice, the final ingredients list will include enough ingredients to make the recipe twice.
+This will pop up a buffer for recipe selection. Add/remove recipes using the +/- widgets. A count is displayed with each recipe, to indicate the number of times it has been added. For instance, if you add a recipe twice, the final ingredients list will include enough ingredients to make the recipe twice.
 
 Once all desired recipes have been added, press the button 'Create shopping list'. This will display the shopping list in a buffer called `*Shopping*`.
 From this buffer, it is easy to create a PDF by doing
